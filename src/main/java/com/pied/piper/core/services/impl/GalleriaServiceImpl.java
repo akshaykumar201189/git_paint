@@ -288,9 +288,13 @@ public class GalleriaServiceImpl implements GalleriaService {
     }
 
     @Override
-    public void approvePullRequest(Long imageId, String accountId) throws Exception {
-        ImageRelation imageRelation = imageRelationService.getImageRelationsForClonedImageIds(Arrays.asList(imageId)).get(0);
+    @Transactional
+    public void approvePullRequest(Long prId, SaveImageRequestDto saveImageRequestDto) throws Exception {
+        ImageRelation imageRelation = imageRelationService.findById(prId);
         imageRelation.setApprovalStatus(ApprovalStatusEnum.APPROVED);
+
+        Image sourceImage = imageDao.fetchById(imageRelation.getSourceImage());
+        sourceImage.setImage(saveImageRequestDto.getImage());
     }
 
     @Override

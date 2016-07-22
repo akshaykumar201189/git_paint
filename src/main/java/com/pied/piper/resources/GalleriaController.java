@@ -89,7 +89,7 @@ public class GalleriaController {
     @POST
     @Path("/clone")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response cloneImage(@QueryParam("account_id") String accountId, @QueryParam("image_id") Long imageId) {
+    public Response cloneImage(@HeaderParam("x-account-id") String accountId, @QueryParam("image_id") Long imageId) {
         HashMap response = new HashMap();
         try {
             Long clonedImageId = galleriaService.cloneImage(imageId, accountId);
@@ -129,15 +129,10 @@ public class GalleriaController {
     */
     @POST
     @Path("/pullrequest/approve")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response approvePullRequest(@PathParam("pr_id") String prId) {
+    public Response approvePullRequest(@PathParam("pr_id") Long prId, SaveImageRequestDto saveImageRequestDto) {
         HashMap response = new HashMap();
         try {
-            /*
-            Long clonedImageId = galleriaService.cloneImage(imageId, accountId);
-            response.put("image_id", clonedImageId);
-            return Response.status(200).entity(response).build();
-            */
+            galleriaService.approvePullRequest(prId, saveImageRequestDto);
             return Response.status(200).build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
