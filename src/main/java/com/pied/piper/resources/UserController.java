@@ -1,24 +1,17 @@
 package com.pied.piper.resources;
 
 import com.google.inject.Inject;
-
 import com.pied.piper.core.db.model.User;
 import com.pied.piper.core.dto.UserDetails;
 import com.pied.piper.core.services.interfaces.UserService;
 import com.pied.piper.exception.ErrorResponse;
 import com.pied.piper.exception.ResponseException;
-
-import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * Created by ankit.c on 21/07/16.
@@ -52,9 +45,9 @@ public class UserController {
 
     @GET
     @Path("/{user_id}/createFollower")
-    public Response createFollower(@PathParam("user_id") Long userId, @QueryParam("follower_id") String followerId) {
+    public Response createFollower(@PathParam("user_id") String userId, @QueryParam("follower_id") String followerId) {
         try {
-            User user = userService.findById(userId);
+            User user = userService.findByAccountId(userId);
             List<User> followers = userService.createFollower(user.getAccountId(), followerId);
             if (followers == null) {
                 ErrorResponse error = new ErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), "followers not found");
