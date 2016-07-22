@@ -46,10 +46,10 @@ public class GalleriaApplication extends Application<GalleriaConfiguration> {
         filter.setInitParameter("allowedHeaders", "*");
         filter.setInitParameter("allowCredentials", "true");
 
-        environment.jersey().register(new LoggingFilter(
-                        Logger.getLogger(LoggingFilter.class.getName()),
-                        true)
-        );
+//        environment.jersey().register(new LoggingFilter(
+//                        Logger.getLogger(LoggingFilter.class.getName()),
+//                        true)
+//        );
     }
 
     public static void main(String args[]) throws Exception {
