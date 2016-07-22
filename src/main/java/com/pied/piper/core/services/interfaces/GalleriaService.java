@@ -21,6 +21,6 @@ public interface GalleriaService {
     Long cloneImage(Long imageId, String accountId) throws Exception;
     void sendPullRequest(Long imageId,String accountId) throws Exception;
     void approvePullRequest(Long prId, SaveImageRequestDto saveImageRequestDto) throws Exception;
-    void rejectPullRequest(Long imageId,String accountId) throws Exception;
+    void rejectPullRequest(Long prId) throws Exception;
     PullRequest getPullRequest(Long prId);
 }

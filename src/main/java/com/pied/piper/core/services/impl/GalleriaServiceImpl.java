@@ -298,8 +298,10 @@ public class GalleriaServiceImpl implements GalleriaService {
     }
 
     @Override
-    public void rejectPullRequest(Long imageId, String accountId) throws Exception {
-
+    @Transactional
+    public void rejectPullRequest(Long prId) throws Exception {
+        ImageRelation imageRelation = imageRelationService.findById(prId);
+        imageRelation.setApprovalStatus(ApprovalStatusEnum.REJECTED);
     }
 
     @Override
