@@ -37,4 +37,10 @@ public class ImageRelationServiceImpl implements ImageRelationService {
     public void saveImageRelation(ImageRelation imageRelation) {
         imageRelationDao.save(imageRelation);
     }
+
+    @Override
+    public ImageRelation findById(Long id) {
+        if(id == null) return null;
+        return imageRelationDao.fetchById(id);
+    }
 }

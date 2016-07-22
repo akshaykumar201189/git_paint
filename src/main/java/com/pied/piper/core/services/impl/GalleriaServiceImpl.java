@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -294,5 +295,24 @@ public class GalleriaServiceImpl implements GalleriaService {
     @Override
     public void rejectPullRequest(Long imageId, String accountId) throws Exception {
 
+    }
+
+    @Override
+    @Transactional
+    public PullRequest getPullRequest(Long prId) {
+        ImageRelation imageRelation = imageRelationService.findById(prId);
+        if(imageRelation == null){
+            throw new ResponseException("pr not found", Response.Status.NOT_FOUND);
+        }
+
+        Image clonedImage = imageDao.fetchById(imageRelation.getClonedImage());
+        if(clonedImage == null){
+            throw new ResponseException("cloned image not found", Response.Status.BAD_REQUEST);
+        }
+
+        User user = userService.findByAccountId(clonedImage.getAccountId());
+
+        PullRequest pullRequest = new PullRequest();
+        return pullRequest;
     }
 }

@@ -1,10 +1,7 @@
 package com.pied.piper.core.services.interfaces;
 
 import com.pied.piper.core.db.model.Image;
-import com.pied.piper.core.dto.ImageMetaData;
-import com.pied.piper.core.dto.ProfileDetails;
-import com.pied.piper.core.dto.SaveImageRequestDto;
-import com.pied.piper.core.dto.SearchResponseDto;
+import com.pied.piper.core.dto.*;
 
 import java.util.List;
 
@@ -25,4 +22,5 @@ public interface GalleriaService {
     void sendPullRequest(Long imageId,String accountId) throws Exception;
     void approvePullRequest(Long imageId,String accountId) throws Exception;
     void rejectPullRequest(Long imageId,String accountId) throws Exception;
+    PullRequest getPullRequest(Long prId);
 }

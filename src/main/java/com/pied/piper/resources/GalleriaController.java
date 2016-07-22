@@ -174,7 +174,7 @@ public class GalleriaController {
     @GET
     @Path("/pullrequest/{pr_id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getPullRequestDetails(@PathParam("pr_id") String prId) {
+    public Response getPullRequestDetails(@PathParam("pr_id") Long prId) {
         HashMap response = new HashMap();
         try {
             /*
