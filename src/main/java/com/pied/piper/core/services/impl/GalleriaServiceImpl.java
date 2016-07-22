@@ -93,6 +93,7 @@ public class GalleriaServiceImpl implements GalleriaService {
         }
     }
 
+    @Override
     @Transactional
     public String getImageData(Long imageId) {
         Image image = getImage(imageId);
@@ -122,6 +123,7 @@ public class GalleriaServiceImpl implements GalleriaService {
     }
 
     @Override
+    @Transactional
     public List<Image> getImagesForAccountId(String accountId) {
         Criterion criterion = Restrictions.eq("accountId", accountId);
         List<Image> images = imageDao.findByCriteria(criterion);
@@ -140,6 +142,7 @@ public class GalleriaServiceImpl implements GalleriaService {
     }
 
     @Override
+    @Transactional
     public List<Image> findByAccountId(String accountId) {
         return imageDao.findByAccountId(accountId);
     }
@@ -171,6 +174,7 @@ public class GalleriaServiceImpl implements GalleriaService {
     }
 
     @Override
+    @Transactional
     public ProfileDetails getProfileDetails(String accountId) throws Exception {
 
         ProfileDetails profileDetails = new ProfileDetails();
@@ -222,6 +226,7 @@ public class GalleriaServiceImpl implements GalleriaService {
     }
 
     @Override
+    @Transactional
     public Long cloneImage(Long imageId, String accountId) throws Exception {
         Image image = imageDao.fetchById(imageId);
         Image clonedImage = new Image();

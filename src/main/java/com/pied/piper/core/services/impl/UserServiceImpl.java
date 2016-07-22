@@ -75,11 +75,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User findById(Long userId) {
         if(userId == null) return null;
         return userDao.fetchById(userId);
     }
 
+    @Override
+    @Transactional
     public List<User> getFollowers(String accountId) {
         User user = findByAccountId(accountId);
         List<User> followers = user.getFollowers().stream().map(userRelations -> findById(userRelations.getDestinationUserId())).collect(Collectors.toList());
@@ -87,6 +90,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public List<User> createFollower(String userId, String followerId) {
         User user = findByAccountId(userId);
         if (user.getFollowers() == null) {

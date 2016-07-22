@@ -55,7 +55,7 @@ public class UserController {
     public Response createFollower(@PathParam("user_id") Long userId, @QueryParam("follower_id") String followerId) {
         try {
             User user = userService.findById(userId);
-            List<User> followers = userService.getFollowers(user.getAccountId());
+            List<User> followers = userService.createFollower(user.getAccountId(), followerId);
             if (followers == null) {
                 ErrorResponse error = new ErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), "followers not found");
                 return Response.status(Response.Status.NOT_FOUND).entity(error).build();
