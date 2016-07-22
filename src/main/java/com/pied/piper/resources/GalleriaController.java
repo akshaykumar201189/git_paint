@@ -134,7 +134,8 @@ public class GalleriaController {
         Approve Pull Request API
     */
     @POST
-    @Path("/pullrequest/approve")
+    @Path("/pullrequest/approve/{pr_id}")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response approvePullRequest(@PathParam("pr_id") Long prId, SaveImageRequestDto saveImageRequestDto) {
         HashMap response = new HashMap();
         try {

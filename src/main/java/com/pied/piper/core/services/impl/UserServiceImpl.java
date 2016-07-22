@@ -82,8 +82,9 @@ public class UserServiceImpl implements UserService {
     public List<User> getFollowers(String accountId) {
         User user = findByAccountId(accountId);
         List<User> followers = new ArrayList<>();
-        if(user!=null && user.getFollowers()!=null && user.getFollowers().size()>0)
+        if(user!=null && user.getFollowers()!=null && user.getFollowers().size()>0) {
             followers = user.getFollowers().stream().map(userRelations -> findById(userRelations.getDestinationUserId())).collect(Collectors.toList());
+        }
         return followers;
     }
 
