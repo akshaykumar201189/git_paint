@@ -20,7 +20,7 @@ public interface GalleriaService {
     List<Image> getImagesForAccountId(String accountId);
     Image getImage(Long imageId);
     SearchResponseDto search(String searchText);
-    ProfileDetails getProfileDetails(String accountId) throws Exception;
+    ProfileDetails getProfileDetails(String accountId, String ownerAccountId) throws Exception;
     Long cloneImage(Long imageId, String accountId) throws Exception;
     void sendPullRequest(Long imageId,String accountId) throws Exception;
     void approvePullRequest(Long imageId,String accountId) throws Exception;

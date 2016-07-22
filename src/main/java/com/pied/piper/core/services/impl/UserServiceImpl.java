@@ -2,9 +2,7 @@ package com.pied.piper.core.services.impl;
 
 import com.google.inject.Inject;
 import com.google.inject.persist.Transactional;
-
 import com.pied.piper.core.db.dao.impl.UserDaoImpl;
-import com.pied.piper.core.db.model.Image;
 import com.pied.piper.core.db.model.User;
 import com.pied.piper.core.db.model.UserRelations;
 import com.pied.piper.core.dto.ImageMetaData;
@@ -12,10 +10,8 @@ import com.pied.piper.core.dto.SearchUserRequestDto;
 import com.pied.piper.core.dto.UserDetails;
 import com.pied.piper.core.services.interfaces.GalleriaService;
 import com.pied.piper.core.services.interfaces.UserService;
-import com.pied.piper.exception.ResponseException;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,7 +81,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public List<User> getFollowers(String accountId) {
         User user = findByAccountId(accountId);
-        List<User> followers = user.getFollowers().stream().map(userRelations -> findById(userRelations.getDestinationUserId())).collect(Collectors.toList());
+        List<User> followers = new ArrayList<>();
+        if(user!=null && user.getFollowers()!=null && user.getFollowers().size()>0)
+            followers = user.getFollowers().stream().map(userRelations -> findById(userRelations.getDestinationUserId())).collect(Collectors.toList());
         return followers;
     }
 

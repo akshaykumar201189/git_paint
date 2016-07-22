@@ -165,7 +165,7 @@ public class GalleriaServiceImpl implements GalleriaService {
         List<UserResponseDto> userResponseDtos = new ArrayList<>();
         if(users!=null && users.size()>0) {
             for(User user : users) {
-                UserResponseDto userResponseDto = new UserResponseDto(user);
+                UserResponseDto userResponseDto = new UserResponseDto(user, null);
                 userResponseDtos.add(userResponseDto);
             }
             searchResponseDto.setUsers(userResponseDtos);
@@ -175,9 +175,24 @@ public class GalleriaServiceImpl implements GalleriaService {
 
     @Override
     @Transactional
-    public ProfileDetails getProfileDetails(String accountId) throws Exception {
+    public ProfileDetails getProfileDetails(String accountId, String ownerAccountId) throws Exception {
 
         ProfileDetails profileDetails = new ProfileDetails();
+
+        // Check if follow
+        if(!accountId.equals(ownerAccountId)) {
+            try {
+                List<User> followersOfOwner = userService.getFollowers(ownerAccountId);
+                if(followersOfOwner!=null && followersOfOwner.size()>0) {
+                    List<String> accountIdsOfFFollowers = followersOfOwner.stream().map(user -> user.getAccountId()).collect(Collectors.toList());
+                    if (accountIdsOfFFollowers.contains(accountId))
+                        profileDetails.setIsFollower(true);
+                }
+            } catch (Exception e) {
+                log.error("Exception in getting followers " + e);
+            }
+            profileDetails.setIsFollower(false);
+        }
 
         // get user details
         SearchUserRequestDto searchUserRequestDto = new SearchUserRequestDto();
@@ -185,7 +200,8 @@ public class GalleriaServiceImpl implements GalleriaService {
         List<User> users = userService.searchUser(searchUserRequestDto);
         if(users==null || users.size()==0)
             throw new ResponseException("User not found",500);
-        UserResponseDto userResponseDto = new UserResponseDto(users.get(0));
+        List<User> followers = userService.getFollowers(users.get(0).getAccountId());
+        UserResponseDto userResponseDto = new UserResponseDto(users.get(0), followers);
         profileDetails.setUser(userResponseDto);
 
         // get all images of user
@@ -215,9 +231,13 @@ public class GalleriaServiceImpl implements GalleriaService {
                 int index = 0;
                 for(Image clonedImage : clonedImagesByOthers) {
                     PullRequest pullRequest = new PullRequest();
-                    pullRequest.setImage(clonedImage);
-                    pullRequest.setSender(new UserResponseDto(usersList.get(index++)));
+                    pullRequest.setPullRequestId(imageRelations.get(index).getId());
+                    pullRequest.setImage(new ImageMetaData(clonedImage));
+                    Long sourceImageId = imageRelations.get(index).getSourceImage();
+                    pullRequest.setOriginalImage(new ImageMetaData(imageDao.fetchById(sourceImageId)));
+                    pullRequest.setSender(new UserResponseDto(usersList.get(index), null));
                     pullRequests.add(pullRequest);
+                    index++;
                 }
             }
             profileDetails.setPullRequests(pullRequests);

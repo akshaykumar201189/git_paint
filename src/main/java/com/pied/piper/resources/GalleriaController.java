@@ -69,9 +69,9 @@ public class GalleriaController {
     @GET
     @Path("/profile/details/{account_id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getProfileDetails(@PathParam("account_id") String accountId) {
+    public Response getProfileDetails(@PathParam("account_id") String accountId, @HeaderParam("x-account-id") String ownerAccountId) {
         try {
-            ProfileDetails profileDetails = galleriaService.getProfileDetails(accountId);
+            ProfileDetails profileDetails = galleriaService.getProfileDetails(accountId, ownerAccountId);
             return Response.status(200).entity(profileDetails).build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();

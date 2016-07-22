@@ -1,7 +1,6 @@
 package com.pied.piper.core.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.pied.piper.core.db.model.Image;
 import io.dropwizard.jackson.JsonSnakeCase;
 import lombok.Data;
 
@@ -15,6 +14,7 @@ import java.util.List;
 @JsonSnakeCase
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProfileDetails {
+    private Boolean isFollower;
     private UserResponseDto user;
     private List<ImageMetaData> ownedImages = new ArrayList<>();
     private List<ImageMetaData> clonedImages = new ArrayList<>();
