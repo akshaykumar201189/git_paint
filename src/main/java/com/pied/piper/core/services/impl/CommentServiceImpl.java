@@ -37,9 +37,9 @@ public class CommentServiceImpl implements CommentService {
             throw new ResponseException("image not found", Response.Status.NOT_FOUND);
         }
 
-        User user = userService.findById(dto.getUserId());
+        User user = userService.findByAccountId(dto.getAccountId());
         if(user == null) {
-            throw new ResponseException("invalid user id " + dto.getUserId(), Response.Status.BAD_REQUEST);
+            throw new ResponseException("invalid user id " + dto.getAccountId(), Response.Status.BAD_REQUEST);
         }
 
         Comment comment = new Comment();

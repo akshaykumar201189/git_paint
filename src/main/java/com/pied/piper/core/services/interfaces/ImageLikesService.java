@@ -9,7 +9,7 @@ import java.util.List;
  * Created by ankit.c on 22/07/16.
  */
 public interface ImageLikesService {
-    ImageLikes save(Long imageId, CreateImageLikedDto dto);
+    ImageLikes save(Long imageId, String accountId);
     List<ImageLikes> findByImageId(Long imageId);
     List<ImageLikes> findByAccountId(String accountId);
 }

@@ -15,9 +15,8 @@ import javax.validation.constraints.Size;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateCommentDto {
     @NotNull
-    private Long userId;
-
-    @NotNull
     @Size(min = 1)
     private String comment;
+
+    private String accountId;
 }

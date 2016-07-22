@@ -30,15 +30,15 @@ public class ImageLikesServiceImpl implements ImageLikesService {
 
     @Override
     @Transactional
-    public ImageLikes save(Long imageId, CreateImageLikedDto dto) {
+    public ImageLikes save(Long imageId, String accountId) {
         Image image = galleriaService.getImage(imageId);
         if(image == null) {
             throw new ResponseException("image not found", Response.Status.NOT_FOUND);
         }
 
-        User user = userService.findById(dto.getUserId());
+        User user = userService.findByAccountId(accountId);
         if(user == null) {
-            throw new ResponseException("invalid user id " + dto.getUserId(), Response.Status.BAD_REQUEST);
+            throw new ResponseException("invalid user id " + accountId, Response.Status.BAD_REQUEST);
         }
 
         ImageLikes entity = new ImageLikes();

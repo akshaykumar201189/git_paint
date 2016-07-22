@@ -106,15 +106,15 @@ public class ImageController {
     }
 
     @POST
-      @Path("/{image_id}/like")
-      public Response imageLikedByUser(@PathParam("image_id") Long imageId,
-                                       @Valid CreateImageLikedDto dto) {
+    @Path("/{image_id}/like")
+    public Response imageLikedByUser(@PathParam("image_id") Long imageId,
+                                     @HeaderParam("x-account-id") String accountId) {
         try {
-            imageLikesService.save(imageId, dto);
+            imageLikesService.save(imageId, accountId);
             return Response.status(Response.Status.CREATED).build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
-        } catch (Exception e){
+        } catch (Exception e) {
             String errorMsg = String.format("Error while saving like for image id %d.", imageId);
             log.error(errorMsg, e);
             ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
@@ -125,8 +125,10 @@ public class ImageController {
     @POST
     @Path("/{image_id}/comment")
     public Response saveComment(@PathParam("image_id") Long imageId,
-                                     @Valid CreateCommentDto dto) {
+                                @HeaderParam("x-account-id") String accountId,
+                                @Valid CreateCommentDto dto) {
         try {
+            dto.setAccountId(accountId);
             commentService.save(imageId, dto);
             return Response.status(Response.Status.CREATED).build();
         } catch (ResponseException e) {
