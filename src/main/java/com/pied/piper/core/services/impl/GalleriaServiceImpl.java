@@ -114,10 +114,11 @@ public class GalleriaServiceImpl implements GalleriaService {
     @Override
     @Transactional
     public List<ImageMetaData> getImageMetaData(String accountId) {
+        User user = userService.findByAccountId(accountId);
         List<Image> imageList = imageDao.getMetaData(null, accountId);
         List<ImageMetaData> metaDataList = new ArrayList<>();
         for(Image image : imageList){
-            metaDataList.add(new ImageMetaData(image));
+            metaDataList.add(new ImageMetaData(image, user));
         }
         return metaDataList;
     }
