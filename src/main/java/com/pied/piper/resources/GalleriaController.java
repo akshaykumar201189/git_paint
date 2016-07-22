@@ -6,6 +6,7 @@ import com.pied.piper.core.dto.SaveImageRequestDto;
 import com.pied.piper.core.dto.SearchResponseDto;
 import com.pied.piper.core.services.interfaces.GalleriaService;
 import com.pied.piper.exception.ResponseException;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -16,6 +17,7 @@ import java.util.HashMap;
  * Created by akshay.kesarwan on 21/05/16.
  */
 @Path("/galleria")
+@Slf4j
 @Produces(MediaType.APPLICATION_JSON)
 public class GalleriaController {
 
@@ -71,6 +73,7 @@ public class GalleriaController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getProfileDetails(@PathParam("account_id") String accountId, @HeaderParam("x-account-id") String ownerAccountId) {
         try {
+            log.info("Owner AccountId " + ownerAccountId);
             ProfileDetails profileDetails = galleriaService.getProfileDetails(accountId, ownerAccountId);
             return Response.status(200).entity(profileDetails).build();
         } catch (ResponseException e) {

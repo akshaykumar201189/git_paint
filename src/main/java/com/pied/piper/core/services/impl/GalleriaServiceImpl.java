@@ -183,15 +183,18 @@ public class GalleriaServiceImpl implements GalleriaService {
         if(!accountId.equals(ownerAccountId)) {
             try {
                 List<User> followersOfOwner = userService.getFollowers(ownerAccountId);
+                log.info("Followers " + followersOfOwner);
                 if(followersOfOwner!=null && followersOfOwner.size()>0) {
                     List<String> accountIdsOfFFollowers = followersOfOwner.stream().map(user -> user.getAccountId()).collect(Collectors.toList());
                     if (accountIdsOfFFollowers.contains(accountId))
                         profileDetails.setIsFollower(true);
+                    else
+                        profileDetails.setIsFollower(false);
                 }
             } catch (Exception e) {
                 log.error("Exception in getting followers " + e);
+                profileDetails.setIsFollower(false);
             }
-            profileDetails.setIsFollower(false);
         }
 
         // get user details
