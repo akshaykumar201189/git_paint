@@ -5,6 +5,7 @@ import com.pied.piper.core.dto.ProfileDetails;
 import com.pied.piper.core.dto.SaveImageRequestDto;
 import com.pied.piper.core.dto.SearchResponseDto;
 import com.pied.piper.core.services.interfaces.GalleriaService;
+import com.pied.piper.exception.ErrorResponse;
 import com.pied.piper.exception.ResponseException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,7 +80,10 @@ public class GalleriaController {
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e) {
-            return Response.status(500).build();
+            String errorMsg = String.format("Error while getting profile details for account id %d.", accountId);
+            log.error(errorMsg, e);
+            ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
         }
     }
 
@@ -98,7 +102,10 @@ public class GalleriaController {
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e) {
-            return Response.status(500).build();
+            String errorMsg = String.format("Error while cloning pull request for image id %d.", imageId);
+            log.error(errorMsg, e);
+            ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
         }
     }
 
@@ -116,7 +123,10 @@ public class GalleriaController {
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e) {
-            return Response.status(500).build();
+            String errorMsg = String.format("Error while sending pull request for cloned image id %d.", clonedImageId);
+            log.error(errorMsg, e);
+            ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
         }
     }
 
@@ -133,7 +143,10 @@ public class GalleriaController {
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e) {
-            return Response.status(500).build();
+            String errorMsg = String.format("Error while approving pull request for pr id %d.", prId);
+            log.error(errorMsg, e);
+            ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
         }
     }
 
@@ -151,7 +164,10 @@ public class GalleriaController {
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e) {
-            return Response.status(500).build();
+            String errorMsg = String.format("Error while rejecting pull request for pr id %d.", prId);
+            log.error(errorMsg, e);
+            ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
         }
     }
 
@@ -167,7 +183,10 @@ public class GalleriaController {
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e) {
-            return Response.status(500).build();
+            String errorMsg = String.format("Error while getting pull request for pr id %d.", prId);
+            log.error(errorMsg, e);
+            ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
         }
     }
 }
