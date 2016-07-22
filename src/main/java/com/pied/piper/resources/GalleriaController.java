@@ -108,7 +108,7 @@ public class GalleriaController {
     @POST
     @Path("/pullrequest/send")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response sendPullRequest(@QueryParam("account_id") String accountId, @QueryParam("image_id") Long imageId) {
+    public Response sendPullRequest(@HeaderParam("x-account-id") String accountId, @QueryParam("image_id") Long clonedImageId) {
         HashMap response = new HashMap();
         try {
             /*
@@ -130,7 +130,7 @@ public class GalleriaController {
     @POST
     @Path("/pullrequest/approve")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response approvePullRequest(@QueryParam("account_id") String accountId, @QueryParam("image_id") Long imageId) {
+    public Response approvePullRequest(@PathParam("pr_id") String prId) {
         HashMap response = new HashMap();
         try {
             /*
@@ -150,9 +150,31 @@ public class GalleriaController {
         Reject Pull Request API
     */
     @POST
-    @Path("/pullrequest/reject")
+    @Path("/pullrequest/reject/{pr_id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response rejectPullRequest(@QueryParam("account_id") String accountId, @QueryParam("image_id") Long imageId) {
+    public Response rejectPullRequest(@PathParam("pr_id") String prId) {
+        HashMap response = new HashMap();
+        try {
+            /*
+            Long clonedImageId = galleriaService.cloneImage(imageId, accountId);
+            response.put("image_id", clonedImageId);
+            return Response.status(200).entity(response).build();
+            */
+            return Response.status(200).build();
+        } catch (ResponseException e) {
+            return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
+        } catch (Exception e) {
+            return Response.status(500).build();
+        }
+    }
+
+    /*
+        Get Pull Request Details API
+    */
+    @GET
+    @Path("/pullrequest/{pr_id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getPullRequestDetails(@PathParam("pr_id") String prId) {
         HashMap response = new HashMap();
         try {
             /*
