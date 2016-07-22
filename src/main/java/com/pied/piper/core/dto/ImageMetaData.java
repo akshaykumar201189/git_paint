@@ -3,11 +3,10 @@ package com.pied.piper.core.dto;
 import com.pied.piper.core.db.model.Image;
 import com.pied.piper.core.db.model.ImageTags;
 import com.pied.piper.core.db.model.User;
-
-import java.util.List;
-
 import io.dropwizard.jackson.JsonSnakeCase;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * Created by ankit.c on 21/07/16.
@@ -24,6 +23,7 @@ public class ImageMetaData {
     private Integer numOfLikes;
     private Boolean isCloned;
     private List<ImageTags> tags;
+    private Long sourceImageId;
 
     public ImageMetaData(){}
 

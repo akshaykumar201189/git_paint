@@ -18,10 +18,7 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -73,7 +70,7 @@ public class GalleriaServiceImpl implements GalleriaService {
             imageDao.save(image);
 
             // Add tags
-            if (!saveImageRequestDto.getTags().isEmpty()) {
+            if (saveImageRequestDto.getTags()!=null && !saveImageRequestDto.getTags().isEmpty()) {
                 List<ImageTags> imageTagses = new ArrayList<>();
                 for(String tag : saveImageRequestDto.getTags()) {
                     ImageTags imageTags = new ImageTags();
@@ -89,7 +86,7 @@ public class GalleriaServiceImpl implements GalleriaService {
 
             return image.getImageId();
         } catch (Exception e) {
-            log.error("Error in saving Image " + e);
+            log.error("Error in saving Image ", e);
             throw e;
         }
     }
@@ -218,6 +215,13 @@ public class GalleriaServiceImpl implements GalleriaService {
 
         // filter cloned images
         List<ImageMetaData> clonedImages = images.stream().filter(image -> image.getIsCloned().equals(true)).collect(Collectors.toList());
+        List<ImageRelation> imageRelationsData = imageRelationService.getImageRelationsForClonedImageIds(clonedImages.stream().map(imageMetaData -> imageMetaData.getImageId()).collect(Collectors.toList()));
+        Map<Long, Long> cloneToSourceMap = new HashMap<Long, Long>();
+        for(ImageRelation imageRelation :  imageRelationsData) {
+            cloneToSourceMap.put(imageRelation.getClonedImage(), imageRelation.getSourceImage());
+        }
+        for(ImageMetaData clonedImage : clonedImages)
+                clonedImage.setSourceImageId(cloneToSourceMap.get(clonedImage.getImageId()));
         profileDetails.setClonedImages(clonedImages);
 
         // get Pull Request

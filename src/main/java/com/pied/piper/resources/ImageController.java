@@ -50,7 +50,7 @@ public class ImageController {
             }
             BASE64Decoder decoder = new BASE64Decoder();
             byte[] imageBytes = decoder.decodeBuffer(imageData);
-            return Response.status(Response.Status.OK).entity(imageBytes).header("Content-type","image/jpeg").build();
+            return Response.status(Response.Status.OK).entity(imageBytes).header("Content-type","image/png").build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e) {
