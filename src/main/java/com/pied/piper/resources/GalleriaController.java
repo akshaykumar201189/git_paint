@@ -111,11 +111,7 @@ public class GalleriaController {
     public Response sendPullRequest(@HeaderParam("x-account-id") String accountId, @QueryParam("image_id") Long clonedImageId) {
         HashMap response = new HashMap();
         try {
-            /*
-            Long clonedImageId = galleriaService.cloneImage(imageId, accountId);
-            response.put("image_id", clonedImageId);
-            return Response.status(200).entity(response).build();
-            */
+            galleriaService.sendPullRequest(clonedImageId, accountId);
             return Response.status(200).build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
