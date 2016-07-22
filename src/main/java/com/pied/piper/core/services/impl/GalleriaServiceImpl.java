@@ -253,32 +253,37 @@ public class GalleriaServiceImpl implements GalleriaService {
     @Override
     @Transactional
     public Long cloneImage(Long imageId, String accountId) throws Exception {
-        Image image = imageDao.fetchById(imageId);
-        Image clonedImage = new Image();
-        clonedImage.setAccountId(accountId);
-        clonedImage.setTitle(image.getTitle());
-        clonedImage.setDescription(image.getDescription());
-        clonedImage.setImage(image.getImage());
-        clonedImage.setIsCloned(true);
-        imageDao.save(clonedImage);
-        List<ImageTags> newImageTags = new ArrayList<>();
-        for(ImageTags imageTags : image.getTags()) {
-            ImageTags newImageTag = new ImageTags();
-            newImageTag.setTag(imageTags.getTag());
-            newImageTag.setSourceImage(clonedImage);
-            imageTagService.saveImageTag(newImageTag);
-            newImageTags.add(newImageTag);
+        try {
+            Image image = imageDao.fetchById(imageId);
+            Image clonedImage = new Image();
+            clonedImage.setAccountId(accountId);
+            clonedImage.setTitle(image.getTitle());
+            clonedImage.setDescription(image.getDescription());
+            clonedImage.setImage(image.getImage());
+            clonedImage.setIsCloned(true);
+            imageDao.save(clonedImage);
+            List<ImageTags> newImageTags = new ArrayList<>();
+            for (ImageTags imageTags : image.getTags()) {
+                ImageTags newImageTag = new ImageTags();
+                newImageTag.setTag(imageTags.getTag());
+                newImageTag.setSourceImage(clonedImage);
+                imageTagService.saveImageTag(newImageTag);
+                newImageTags.add(newImageTag);
+            }
+            clonedImage.setTags(newImageTags);
+            imageDao.save(clonedImage);
+
+            ImageRelation imageRelation = new ImageRelation();
+            imageRelation.setApprovalStatus(ApprovalStatusEnum.NEW);
+            imageRelation.setClonedImage(clonedImage.getImageId());
+            imageRelation.setSourceImage(imageId);
+
+            imageRelationService.saveImageRelation(imageRelation);
+            return clonedImage.getImageId();
+        } catch (Exception e) {
+            log.error("Error in cloning " , e);
+            throw new ResponseException("Error in cloning", 500);
         }
-        clonedImage.setTags(newImageTags);
-        imageDao.save(clonedImage);
-
-        ImageRelation imageRelation = new ImageRelation();
-        imageRelation.setApprovalStatus(ApprovalStatusEnum.NEW);
-        imageRelation.setClonedImage(clonedImage.getImageId());
-        imageRelation.setId(imageId);
-
-        imageRelationService.saveImageRelation(imageRelation);
-        return clonedImage.getImageId();
     }
 
     @Override
