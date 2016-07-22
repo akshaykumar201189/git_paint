@@ -66,8 +66,8 @@ public class UserController {
     }
 
     @GET
-    @Path("/{user_id}/home")
-    public Response getImagesForFollower(@PathParam("user_id") String userId) {
+    @Path("/home")
+    public Response getImagesForFollower(@HeaderParam("x-account-id") String userId) {
         try {
             List<User> followers = userService.getFollowers(userId);
             List<List<ImageMetaData>> followerImages = userService.getFollowerImages(userId);
