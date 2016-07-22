@@ -306,14 +306,24 @@ public class GalleriaServiceImpl implements GalleriaService {
             throw new ResponseException("pr not found", Response.Status.NOT_FOUND);
         }
 
-        Image clonedImage = imageDao.fetchById(imageRelation.getClonedImage());
+        ImageMetaData clonedImage = getImageMetaData(imageRelation.getClonedImage());
         if(clonedImage == null){
             throw new ResponseException("cloned image not found", Response.Status.BAD_REQUEST);
         }
 
-        User user = userService.findByAccountId(clonedImage.getAccountId());
+        ImageMetaData originalImage = getImageMetaData(imageRelation.getSourceImage());
+        if(originalImage == null){
+            throw new ResponseException("original image not found", Response.Status.BAD_REQUEST);
+        }
 
         PullRequest pullRequest = new PullRequest();
+        pullRequest.setPullRequestId(imageRelation.getId());
+        pullRequest.setImage(clonedImage);
+        pullRequest.setOriginalImage(originalImage);
+
+        User user = userService.findByAccountId(clonedImage.getAccountId());
+        pullRequest.setSender(new UserResponseDto(user, null));
+
         return pullRequest;
     }
 }

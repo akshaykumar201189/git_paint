@@ -175,14 +175,8 @@ public class GalleriaController {
     @Path("/pullrequest/{pr_id}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getPullRequestDetails(@PathParam("pr_id") Long prId) {
-        HashMap response = new HashMap();
         try {
-            /*
-            Long clonedImageId = galleriaService.cloneImage(imageId, accountId);
-            response.put("image_id", clonedImageId);
-            return Response.status(200).entity(response).build();
-            */
-            return Response.status(200).build();
+            return Response.status(200).entity(galleriaService.getPullRequest(prId)).build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e) {

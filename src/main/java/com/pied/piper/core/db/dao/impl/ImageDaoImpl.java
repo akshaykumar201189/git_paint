@@ -51,7 +51,7 @@ public class ImageDaoImpl extends BaseDaoImpl<Image, Long> {
         List<String> queryParamList = new ArrayList<>();
         Session session = (Session) getEntityManager().getDelegate();
         StringBuilder hql = new StringBuilder(
-                "select i.imageId, i.accountId, i.description, i.numOfLikes, i.title, i.version " +
+                "select i.imageId, i.accountId, i.description, i.numOfLikes, i.title, i.version, i.isCloned " +
                         " from Image i " +
                         " where "
         );
@@ -92,6 +92,7 @@ public class ImageDaoImpl extends BaseDaoImpl<Image, Long> {
             image.setNumOfLikes((Integer) row[3]);
             image.setTitle((String) row[4]);
             image.setVersion((Integer) row[5]);
+            image.setIsCloned((Boolean) row[6]);
             images.add(image);
         }
 
