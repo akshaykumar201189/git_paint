@@ -102,4 +102,12 @@ public class UserServiceImpl implements UserService {
         return getFollowers(userId);
     }
 
+    @Override
+    public List<List<ImageMetaData>> getFollowerImages(String userId) {
+        List<User> followers = getFollowers(userId);
+        List<List<ImageMetaData>> followerImages = new ArrayList<>();
+        followers.stream().forEach(follower -> followerImages.add(galleriaService.getImageMetaData(follower.getAccountId())));
+        return followerImages;
+    }
+
 }
