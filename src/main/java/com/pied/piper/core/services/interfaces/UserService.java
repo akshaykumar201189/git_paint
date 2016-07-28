@@ -1,12 +1,11 @@
 package com.pied.piper.core.services.interfaces;
 
 import com.google.inject.ImplementedBy;
-
-import com.pied.piper.core.db.model.Image;
 import com.pied.piper.core.db.model.User;
 import com.pied.piper.core.dto.ImageMetaData;
 import com.pied.piper.core.dto.SearchUserRequestDto;
 import com.pied.piper.core.dto.UserDetails;
+import com.pied.piper.core.dto.user.SignInRequestDto;
 import com.pied.piper.core.services.impl.UserServiceImpl;
 
 import java.util.List;
@@ -31,4 +30,5 @@ public interface UserService {
 
     List<List<ImageMetaData>> getFollowerImages(String userId);
 
+    void signInUser(SignInRequestDto signInRequestDto);
 }

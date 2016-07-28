@@ -8,8 +8,13 @@ import com.pied.piper.core.db.model.UserRelations;
 import com.pied.piper.core.dto.ImageMetaData;
 import com.pied.piper.core.dto.SearchUserRequestDto;
 import com.pied.piper.core.dto.UserDetails;
+import com.pied.piper.core.dto.user.SignInRequestDto;
 import com.pied.piper.core.services.interfaces.GalleriaService;
 import com.pied.piper.core.services.interfaces.UserService;
+import com.pied.piper.util.FacebookUtils;
+import com.restfb.DefaultFacebookClient;
+import com.restfb.FacebookClient;
+import com.restfb.Version;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -91,16 +96,22 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public List<User> createFollower(String userId, String followerId) {
+        addFollower(userId, followerId);
+        return getFollowers(userId);
+    }
+
+    private void addFollower(String userId, String followerId) {
         User user = findByAccountId(userId);
         if (user.getFollowers() == null) {
             user.setFollowers(new ArrayList<>());
         }
         User follower = findByAccountId(followerId);
-        UserRelations userRelation = new UserRelations();
-        userRelation.setSourceUser(user);
-        userRelation.setDestinationUserId(follower.getUserId());
-        user.getFollowers().add(userRelation);
-        return getFollowers(userId);
+        if(follower!=null) {
+            UserRelations userRelation = new UserRelations();
+            userRelation.setSourceUser(user);
+            userRelation.setDestinationUserId(follower.getUserId());
+            user.getFollowers().add(userRelation);
+        }
     }
 
     @Override
@@ -109,6 +120,47 @@ public class UserServiceImpl implements UserService {
         List<List<ImageMetaData>> followerImages = new ArrayList<>();
         followers.stream().forEach(follower -> followerImages.add(galleriaService.getImageMetaData(follower.getAccountId())));
         return followerImages;
+    }
+
+    @Override
+    @Transactional
+    public void signInUser(SignInRequestDto signInRequestDto) {
+
+        // Search existing user
+        SearchUserRequestDto searchUserRequestDto = new SearchUserRequestDto();
+        searchUserRequestDto.setAccountId(signInRequestDto.getUserDetails().getUserId());
+        List<User> users = userDao.searchUser(searchUserRequestDto);
+        User user = null;
+        if(users.isEmpty()) {
+            // If not present, create an entry in User table
+            user = new User();
+            UserDetails userDetails = signInRequestDto.getUserDetails();
+            user.setAccountId(userDetails.getUserId());
+            user.setAvatarUrl(userDetails.getAvatarUrl());
+            user.setName(userDetails.getName());
+            user.setEmailId(userDetails.getEmail());
+            userDao.save(user);
+        } else {
+            user = users.get(0);
+        }
+
+        // Get Friends from facebook and follow them if not already followed
+        String accessToken = signInRequestDto.getOAuthCredentials().getOAuthResponse().getAccessToken();
+        FacebookClient client = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
+        List<com.restfb.types.User> friends = FacebookUtils.findFriends(client, user.getAccountId());
+
+        List<UserRelations> userRelationsList = user.getFollowers();
+        List<String> followersAccountIds = new ArrayList<>();
+        for(UserRelations userRelations : userRelationsList) {
+            followersAccountIds.add(userDao.fetchById(userRelations.getDestinationUserId()).getAccountId());
+        }
+
+        for(com.restfb.types.User friend : friends) {
+            if(!followersAccountIds.contains(friend.getId())) {
+                addFollower(user.getAccountId(),friend.getId());
+            }
+        }
+
     }
 
 }

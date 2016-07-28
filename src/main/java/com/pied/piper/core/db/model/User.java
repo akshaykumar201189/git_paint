@@ -23,8 +23,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long userId;
 
-    @Column(name = "account_id")
+    @Column(name = "account_id", unique = true)
     private String accountId;
+
+    @Column(name = "email_id")
+    private String emailId;
 
     @Column(name = "name")
     private String name;

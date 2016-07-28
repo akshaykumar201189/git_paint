@@ -4,11 +4,13 @@ import com.google.inject.Inject;
 import com.pied.piper.core.db.model.User;
 import com.pied.piper.core.dto.ImageMetaData;
 import com.pied.piper.core.dto.UserDetails;
+import com.pied.piper.core.dto.user.SignInRequestDto;
 import com.pied.piper.core.services.interfaces.UserService;
 import com.pied.piper.exception.ErrorResponse;
 import com.pied.piper.exception.ResponseException;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -80,6 +82,20 @@ public class UserController {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e){
             String errorMsg = String.format("Error while getting follower images details for user id %d.", userId);
+            log.error(errorMsg, e);
+            ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
+        }
+    }
+
+    @POST
+    @Path(("/signin"))
+    public Response signInUser(@Valid SignInRequestDto signInRequestDto) {
+        try {
+            userService.signInUser(signInRequestDto);
+            return Response.status(Response.Status.OK).build();
+        } catch (Exception e) {
+            String errorMsg = String.format("Error while signing for ", signInRequestDto.getUserDetails().getUserId());
             log.error(errorMsg, e);
             ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();

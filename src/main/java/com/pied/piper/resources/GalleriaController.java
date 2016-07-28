@@ -33,6 +33,7 @@ public class GalleriaController {
     @Path("/test")
     public Response test() {
         String result = "Testing Successful";
+        System.out.println("Hello");
         return Response.status(Response.Status.OK).entity(result).build();
     }
 

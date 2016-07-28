@@ -16,6 +16,14 @@ repositories {
     mavenCentral()
 }
 
+test {
+    testLogging {
+        // show standard out and standard error of the test JVM(s) on the console
+        showStandardStreams = true
+        events 'passed', 'failed', 'skipped'
+    }
+}
+
 dependencies {
     compile group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     compile group: 'io.dropwizard', name: 'dropwizard-migrations', version: dropwizardVersion
@@ -32,8 +40,12 @@ dependencies {
     // https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.8.3'
     compile 'org.hibernate:hibernate-search-orm:5.0.0.Final'
+    //compile 'org.facebook4j:facebook4j-core:2.4.6'
 
+    // https://mvnrepository.com/artifact/com.restfb/restfb
+    compile group: 'com.restfb', name: 'restfb', version: '1.19.0'
 
+    compile group: 'junit', name: 'junit', version: junitVersion
     testCompile group: 'junit', name: 'junit', version: junitVersion
 }
 
