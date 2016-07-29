@@ -26,7 +26,7 @@ public interface UserService {
 
     List<User> getFollowers(String accountId);
 
-    List<User> createFollower(String user, String follower);
+    void addFollower(String userId, String followerId);
 
     List<List<ImageMetaData>> getFollowerImages(String userId);
 

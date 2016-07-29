@@ -1,3 +1,10 @@
+awsCredentials:
+  accessKey: AKIAJJD4VDIIEO2N4MOA
+  secretKey: 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
+
+swagger:
+  resourcePackage: com.pied.piper.resources
+
 server:
   applicationConnectors:
   - type: http

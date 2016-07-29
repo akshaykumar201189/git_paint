@@ -94,13 +94,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
-    public List<User> createFollower(String userId, String followerId) {
-        addFollower(userId, followerId);
-        return getFollowers(userId);
-    }
-
-    private void addFollower(String userId, String followerId) {
+    public void addFollower(String userId, String followerId) {
         User user = findByAccountId(userId);
         if (user.getFollowers() == null) {
             user.setFollowers(new ArrayList<>());
@@ -122,6 +116,11 @@ public class UserServiceImpl implements UserService {
         return followerImages;
     }
 
+    /**
+     * API for signing In
+     * TODO: Implement Security and Validation of Inputs
+     * @param signInRequestDto
+     */
     @Override
     @Transactional
     public void signInUser(SignInRequestDto signInRequestDto) {
@@ -161,6 +160,10 @@ public class UserServiceImpl implements UserService {
             }
         }
 
+        // TODO: Query Facebook and Store full profile image
+        String fullProfileUrl = null;
+        // fullProfileUrl = FacebbokUtils.getFullProfileImageUrl(client);
+        user.setFullProfileUrl(fullProfileUrl);
     }
 
 }

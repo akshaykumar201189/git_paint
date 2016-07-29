@@ -35,6 +35,9 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(name = "full_profile_url")
+    private String fullProfileUrl;
+
     @Column(name = "version")
     @Version
     private Integer version;

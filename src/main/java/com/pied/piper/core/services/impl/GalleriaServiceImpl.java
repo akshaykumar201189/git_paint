@@ -13,6 +13,7 @@ import com.pied.piper.core.services.interfaces.GalleriaService;
 import com.pied.piper.core.services.interfaces.ImageRelationService;
 import com.pied.piper.core.services.interfaces.UserService;
 import com.pied.piper.exception.ResponseException;
+import com.pied.piper.util.AWSUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
@@ -31,13 +32,17 @@ public class GalleriaServiceImpl implements GalleriaService {
     private final ImageTagServiceImpl imageTagService;
     private final UserService userService;
     private final ImageRelationService imageRelationService;
+    private final AWSUtils awsUtils;
+    private final String IMAGE_PRE_APPEND_KEY = "img";
+    private final String IMAGE_CLOUDFRONT_BASE_URL = "http://d1wbh4krdauia7.cloudfront.net/";
 
     @Inject
-    public GalleriaServiceImpl(ImageDaoImpl imageDao, ImageTagServiceImpl imageTagService, UserService userService, ImageRelationService imageRelationService) {
+    public GalleriaServiceImpl(ImageDaoImpl imageDao, ImageTagServiceImpl imageTagService, UserService userService, ImageRelationService imageRelationService, AWSUtils awsUtils) {
         this.imageDao = imageDao;
         this.imageTagService = imageTagService;
         this.userService = userService;
         this.imageRelationService = imageRelationService;
+        this.awsUtils = awsUtils;
     }
 
     @Override
@@ -52,12 +57,6 @@ public class GalleriaServiceImpl implements GalleriaService {
                 image = new Image();
             }
 
-            if (saveImageRequestDto.getImage() != null) {
-                String imageStr = saveImageRequestDto.getImage();
-                imageStr = imageStr.substring(imageStr.indexOf(",")+1);
-                image.setImage(imageStr);
-            }
-
             if (saveImageRequestDto.getDescription() != null)
                 image.setDescription(saveImageRequestDto.getDescription());
 
@@ -68,6 +67,14 @@ public class GalleriaServiceImpl implements GalleriaService {
                 image.setAccountId(saveImageRequestDto.getAccountId());
 
             imageDao.save(image);
+
+            if (saveImageRequestDto.getImage() != null) {
+                String imageStr = saveImageRequestDto.getImage();
+                imageStr = imageStr.substring(imageStr.indexOf(",")+1);
+                String fileName = IMAGE_PRE_APPEND_KEY + "_" + image.getImageId() + "_" + System.currentTimeMillis() +".jpg";
+                awsUtils.uploadImageToS3(imageStr, fileName);
+                image.setImage(IMAGE_CLOUDFRONT_BASE_URL + fileName);
+            }
 
             // Add tags
             if (saveImageRequestDto.getTags()!=null && !saveImageRequestDto.getTags().isEmpty()) {

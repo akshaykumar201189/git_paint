@@ -6,13 +6,13 @@ import com.hubspot.dropwizard.guice.GuiceBundle;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
-import org.glassfish.jersey.filter.LoggingFilter;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import java.util.EnumSet;
-import java.util.logging.Logger;
 
 /**
  * Created by akshay.kesarwan on 21/05/16.
@@ -30,6 +30,12 @@ public class GalleriaApplication extends Application<GalleriaConfiguration> {
                 .setConfigClass(GalleriaConfiguration.class)
                 .build(Stage.DEVELOPMENT);
         bootstrap.addBundle(guiceBundle);
+        bootstrap.addBundle(new SwaggerBundle<GalleriaConfiguration>() {
+            @Override
+            protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(GalleriaConfiguration configuration) {
+                return configuration.swaggerBundleConfiguration;
+            }
+        });
     }
 
     @Override
@@ -45,11 +51,6 @@ public class GalleriaApplication extends Application<GalleriaConfiguration> {
         filter.setInitParameter(CrossOriginFilter.ACCESS_CONTROL_ALLOW_ORIGIN_HEADER, "*");
         filter.setInitParameter("allowedHeaders", "*");
         filter.setInitParameter("allowCredentials", "true");
-
-//        environment.jersey().register(new LoggingFilter(
-//                        Logger.getLogger(LoggingFilter.class.getName()),
-//                        true)
-//        );
     }
 
     public static void main(String args[]) throws Exception {

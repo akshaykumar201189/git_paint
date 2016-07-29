@@ -45,6 +45,14 @@ dependencies {
     // https://mvnrepository.com/artifact/com.restfb/restfb
     compile group: 'com.restfb', name: 'restfb', version: '1.19.0'
 
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk
+    compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.21'
+
+    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.5'
+
+    compile 'io.federecio:dropwizard-swagger:0.7.0'
+
     compile group: 'junit', name: 'junit', version: junitVersion
     testCompile group: 'junit', name: 'junit', version: junitVersion
 }
