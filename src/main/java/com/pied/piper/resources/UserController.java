@@ -45,7 +45,7 @@ public class UserController {
             userService.signInUser(signInRequestDto);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
-            String errorMsg = String.format("Error while signing for ", signInRequestDto.getUserDetails().getUserId());
+            String errorMsg = String.format("Error while signing for ", signInRequestDto.getUserDetails().getId());
             log.error(errorMsg, e);
             ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
@@ -61,6 +61,7 @@ public class UserController {
     @GET
     @Path("/profile/details/{account_id}")
     @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Get Profile Details", response = ProfileDetails.class)
     public Response getProfileDetails(@PathParam("account_id") String accountId, @HeaderParam("x-account-id") String ownerAccountId) {
         try {
             ProfileDetails profileDetails = galleriaService.getProfileDetails(accountId, ownerAccountId);

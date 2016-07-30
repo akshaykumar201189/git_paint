@@ -11,11 +11,13 @@ import com.pied.piper.core.dto.UserDetails;
 import com.pied.piper.core.dto.user.SignInRequestDto;
 import com.pied.piper.core.services.interfaces.GalleriaService;
 import com.pied.piper.core.services.interfaces.UserService;
+import com.pied.piper.exception.ResponseException;
 import com.pied.piper.util.FacebookUtils;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Version;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,14 +129,14 @@ public class UserServiceImpl implements UserService {
 
         // Search existing user
         SearchUserRequestDto searchUserRequestDto = new SearchUserRequestDto();
-        searchUserRequestDto.setAccountId(signInRequestDto.getUserDetails().getUserId());
+        searchUserRequestDto.setAccountId(signInRequestDto.getUserDetails().getId());
         List<User> users = userDao.searchUser(searchUserRequestDto);
         User user = null;
         if(users.isEmpty()) {
             // If not present, create an entry in User table
             user = new User();
             UserDetails userDetails = signInRequestDto.getUserDetails();
-            user.setAccountId(userDetails.getUserId());
+            user.setAccountId(userDetails.getId());
             user.setAvatarUrl(userDetails.getAvatarUrl());
             user.setName(userDetails.getName());
             user.setEmailId(userDetails.getEmail());
@@ -144,9 +146,16 @@ public class UserServiceImpl implements UserService {
         }
 
         // Get Friends from facebook and follow them if not already followed
-        String accessToken = signInRequestDto.getOAuthCredentials().getOAuthResponse().getAccessToken();
-        FacebookClient client = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
-        List<com.restfb.types.User> friends = FacebookUtils.findFriends(client, user.getAccountId());
+        List<com.restfb.types.User> friends = null;
+        try {
+            String accessToken = signInRequestDto.getOAuthCredentials().getOAuthResponse().getAccessToken();
+            FacebookClient client = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
+            friends = FacebookUtils.findFriends(client, user.getAccountId());
+            com.restfb.types.User fbUser = FacebookUtils.getUserDetails(client);
+            Validate.isTrue(fbUser.getId().equals(signInRequestDto.getUserDetails().getId()));
+        } catch (Exception e) {
+            throw new ResponseException("Authentication error while accessing facebook");
+        }
 
         List<UserRelations> userRelationsList = user.getFollowers();
         List<String> followersAccountIds = new ArrayList<>();

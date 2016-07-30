@@ -1,7 +1,6 @@
 package com.pied.piper.core.db.dao.impl;
 
 import com.google.inject.Inject;
-import com.pied.piper.core.db.model.Image;
 import com.pied.piper.core.db.model.User;
 import com.pied.piper.core.dto.SearchUserRequestDto;
 import org.hibernate.Criteria;

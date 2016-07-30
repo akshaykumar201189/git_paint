@@ -1,11 +1,9 @@
 package com.pied.piper.core.db.dao.impl;
 
 import com.google.inject.Inject;
-
 import com.pied.piper.core.db.model.Image;
 import com.pied.piper.core.db.model.User;
 import com.pied.piper.core.dto.SearchImageRequestDto;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -13,14 +11,9 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
+import java.util.*;
 
 /**
  * Created by akshay.kesarwan on 21/07/16.
@@ -39,7 +32,7 @@ public class ImageDaoImpl extends BaseDaoImpl<Image, Long> {
 
         Session session = (Session) getEntityManager().getDelegate();
         Criteria criteria = session.createCriteria(Image.class);
-        Criterion typeCriterion = Restrictions.eq("accountId", accountId);
+        Criterion typeCriterion = Restrictions.eq("id", accountId);
         criteria.add(typeCriterion);
 
         return criteria.list();
@@ -51,7 +44,7 @@ public class ImageDaoImpl extends BaseDaoImpl<Image, Long> {
         List<String> queryParamList = new ArrayList<>();
         Session session = (Session) getEntityManager().getDelegate();
         StringBuilder hql = new StringBuilder(
-                "select i.imageId, i.accountId, i.description, i.numOfLikes, i.title, i.version, i.isCloned " +
+                "select i.imageId, i.id, i.description, i.numOfLikes, i.title, i.version, i.isCloned " +
                         " from Image i " +
                         " where "
         );
@@ -63,8 +56,8 @@ public class ImageDaoImpl extends BaseDaoImpl<Image, Long> {
         }
 
         if (StringUtils.isNotEmpty(accountId)) {
-            queryParamList.add(" i.accountId = :accountId");
-            queryMap.put("accountId", accountId);
+            queryParamList.add(" i.id = :id");
+            queryMap.put("id", accountId);
             flag = true;
         }
 
@@ -107,7 +100,7 @@ public class ImageDaoImpl extends BaseDaoImpl<Image, Long> {
             criteria.add(typeCriterion);
         }
         if (searchImageDto.getAccountId() != null) {
-            Criterion accountIdCriteria = Restrictions.eq("accountId", searchImageDto.getAccountId());
+            Criterion accountIdCriteria = Restrictions.eq("id", searchImageDto.getAccountId());
             criteria.add(accountIdCriteria);
         }
         return criteria.list();

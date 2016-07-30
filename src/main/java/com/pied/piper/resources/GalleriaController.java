@@ -62,7 +62,6 @@ public class GalleriaController {
      */
     @POST
     @Path("/pullrequest/send")
-    @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Send Pull Request")
     public Response sendPullRequest(@HeaderParam("x-account-id") String accountId, @QueryParam("image_id") Long clonedImageId) {
         try {
@@ -109,7 +108,6 @@ public class GalleriaController {
      */
     @POST
     @Path("/pullrequest/reject/{pr_id}")
-    @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Reject Pull Request")
     public Response rejectPullRequest(@PathParam("pr_id") Long prId) {
         try {
@@ -132,7 +130,6 @@ public class GalleriaController {
      */
     @GET
     @Path("/pullrequest/{pr_id}")
-    @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Approve Pull Request", response = PullRequest.class)
     public Response getPullRequestDetails(@PathParam("pr_id") Long prId) {
         try {

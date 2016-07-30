@@ -44,7 +44,7 @@ public class CommentDaoImpl extends BaseDaoImpl<Comment, Long> implements BaseDa
             return Collections.EMPTY_LIST;
         Session session = (Session) getEntityManager().getDelegate();
         Criteria criteria = session.createCriteria(Comment.class);
-        Criterion typeCriterion = Restrictions.eq("accountId", accountId);
+        Criterion typeCriterion = Restrictions.eq("id", accountId);
         criteria.add(typeCriterion);
         criteria.addOrder(Order.desc("id"));
         return criteria.list();

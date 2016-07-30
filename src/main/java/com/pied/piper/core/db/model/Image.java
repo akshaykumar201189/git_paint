@@ -61,4 +61,7 @@ public class Image {
     @OneToMany(mappedBy = "image", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
+    @Transient
+    private ImageRelation imageRelation;
+
 }

@@ -44,7 +44,7 @@ public class Comment {
         return "Comment{" +
                 "id=" + id +
                 ", image=" + image.getImageId() +
-                ", accountId='" + accountId + '\'' +
+                ", id='" + accountId + '\'' +
                 ", comment='" + comment + '\'' +
                 '}';
     }

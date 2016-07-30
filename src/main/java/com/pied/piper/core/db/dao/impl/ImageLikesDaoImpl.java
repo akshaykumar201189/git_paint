@@ -42,7 +42,7 @@ public class ImageLikesDaoImpl extends BaseDaoImpl<ImageLikes, Long> implements 
             return Collections.EMPTY_LIST;
         Session session = (Session) getEntityManager().getDelegate();
         Criteria criteria = session.createCriteria(ImageLikes.class);
-        Criterion typeCriterion = Restrictions.eq("accountId", accountId);
+        Criterion typeCriterion = Restrictions.eq("id", accountId);
         criteria.add(typeCriterion);
         criteria.addOrder(Order.desc("id"));
         return criteria.list();

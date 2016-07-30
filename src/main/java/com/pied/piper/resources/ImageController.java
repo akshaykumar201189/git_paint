@@ -71,7 +71,7 @@ public class ImageController {
     @Path("/save")
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Save Image", response = HashMap.class)
-    public Response saveImage(@ApiParam("saveImageRequestDto") SaveImageRequestDto saveImageRequestDto) {
+    public Response saveImage(@ApiParam("saveImageRequestDto") @Valid SaveImageRequestDto saveImageRequestDto) {
         HashMap response = new HashMap();
         try {
             Long imageId = galleriaService.saveImage(saveImageRequestDto);
@@ -93,7 +93,6 @@ public class ImageController {
      */
     @POST
     @Path("/clone")
-    @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Clone Image", response = HashMap.class)
     public Response cloneImage(@HeaderParam("x-account-id") String accountId, @QueryParam("image_id") Long imageId) {
         HashMap response = new HashMap();

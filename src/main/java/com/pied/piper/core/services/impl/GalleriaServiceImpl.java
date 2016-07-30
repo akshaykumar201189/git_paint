@@ -215,21 +215,25 @@ public class GalleriaServiceImpl implements GalleriaService {
         profileDetails.setUser(userResponseDto);
 
         // get all images of user
-        List<ImageMetaData> images = getImagesForAccountId(accountId).stream().map(image -> new ImageMetaData(image)).collect(Collectors.toList());
+        List<Image> images = getImagesForAccountId(accountId);
 
-        // filter owned images
-        List<ImageMetaData> ownedImages = images.stream().filter(image -> image.getIsCloned().equals(false)).collect(Collectors.toList());
+        // get owned images
+        List<Image> ownedImages = images.stream().filter(image -> image.getIsCloned().equals(false)).collect(Collectors.toList());
         profileDetails.setOwnedImages(ownedImages);
 
-        // filter cloned images
-        List<ImageMetaData> clonedImages = images.stream().filter(image -> image.getIsCloned().equals(true)).collect(Collectors.toList());
-        List<ImageRelation> imageRelationsData = imageRelationService.getImageRelationsForClonedImageIds(clonedImages.stream().map(imageMetaData -> imageMetaData.getImageId()).collect(Collectors.toList()));
-        Map<Long, Long> cloneToSourceMap = new HashMap<Long, Long>();
-        for(ImageRelation imageRelation :  imageRelationsData) {
-            cloneToSourceMap.put(imageRelation.getClonedImage(), imageRelation.getSourceImage());
+        log.info("COming here before");
+        // get cloned images
+        List<Image> clonedImages = images.stream().filter(image -> image.getIsCloned().equals(true)).collect(Collectors.toList());
+        if(clonedImages!=null && clonedImages.size() > 0) {
+            List<ImageRelation> imageRelationsData = imageRelationService.getImageRelationsForClonedImageIds(clonedImages.stream().map(imageMetaData -> imageMetaData.getImageId()).collect(Collectors.toList()));
+            Map<Long, ImageRelation> imageRelationMap = new HashMap<>();
+            for (ImageRelation imageRelation : imageRelationsData) {
+                imageRelationMap.put(imageRelation.getClonedImage(), imageRelation);
+            }
+            for (Image clonedImage : clonedImages) {
+                clonedImage.setImageRelation(imageRelationMap.get(clonedImage.getImageId()));
+            }
         }
-        for(ImageMetaData clonedImage : clonedImages)
-                clonedImage.setSourceImageId(cloneToSourceMap.get(clonedImage.getImageId()));
         profileDetails.setClonedImages(clonedImages);
 
         // get Pull Request
@@ -237,6 +241,7 @@ public class GalleriaServiceImpl implements GalleriaService {
             List<ImageRelation> imageRelations = imageRelationService.getImageRelationsForSourceImageIds(ownedImages.stream().map(image -> image.getImageId()).collect(Collectors.toList()));
             imageRelations.removeIf(imageRelation -> !imageRelation.getApprovalStatus().equals(ApprovalStatusEnum.PENDING));
             List<PullRequest> pullRequests = new ArrayList<>();
+            log.info("COming here");
             if(imageRelations!=null && imageRelations.size()>0) {
                 List<Long> clonedImagesByOthersId = imageRelations.stream().map(imageRelation -> imageRelation.getClonedImage()).collect(Collectors.toList());
                 Criterion idCriterion = Restrictions.in("imageId", clonedImagesByOthersId);
@@ -249,9 +254,9 @@ public class GalleriaServiceImpl implements GalleriaService {
                 for(Image clonedImage : clonedImagesByOthers) {
                     PullRequest pullRequest = new PullRequest();
                     pullRequest.setPullRequestId(imageRelations.get(index).getId());
-                    pullRequest.setImage(new ImageMetaData(clonedImage));
+                    pullRequest.setImage(clonedImage);
                     Long sourceImageId = imageRelations.get(index).getSourceImage();
-                    pullRequest.setOriginalImage(new ImageMetaData(imageDao.fetchById(sourceImageId)));
+                    pullRequest.setOriginalImage(imageDao.fetchById(sourceImageId));
                     pullRequest.setSender(new UserResponseDto(usersList.get(index), null));
                     pullRequests.add(pullRequest);
                     index++;
@@ -314,7 +319,9 @@ public class GalleriaServiceImpl implements GalleriaService {
         Image sourceImage = imageDao.fetchById(imageRelation.getSourceImage());
         String imageStr = saveImageRequestDto.getImage();
         imageStr = imageStr.substring(imageStr.indexOf(",")+1);
-        sourceImage.setImage(imageStr);
+        String fileName = IMAGE_PRE_APPEND_KEY + "_" + imageRelation.getClonedImage() + "_" + System.currentTimeMillis() +".jpg";
+        awsUtils.uploadImageToS3(imageStr, fileName);
+        sourceImage.setImage(IMAGE_CLOUDFRONT_BASE_URL + fileName);
     }
 
     @Override
@@ -332,12 +339,12 @@ public class GalleriaServiceImpl implements GalleriaService {
             throw new ResponseException("pr not found", Response.Status.NOT_FOUND);
         }
 
-        ImageMetaData clonedImage = getImageMetaData(imageRelation.getClonedImage());
+        Image clonedImage = imageDao.fetchById(imageRelation.getClonedImage());
         if(clonedImage == null){
             throw new ResponseException("cloned image not found", Response.Status.BAD_REQUEST);
         }
 
-        ImageMetaData originalImage = getImageMetaData(imageRelation.getSourceImage());
+        Image originalImage = imageDao.fetchById(imageRelation.getSourceImage());
         if(originalImage == null){
             throw new ResponseException("original image not found", Response.Status.BAD_REQUEST);
         }

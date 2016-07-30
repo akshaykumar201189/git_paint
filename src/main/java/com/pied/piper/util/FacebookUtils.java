@@ -18,8 +18,13 @@ public class FacebookUtils {
     public static List<User> findFriends(FacebookClient facebookClient, String accountId) {
 
         Connection<User> myFriends = facebookClient.fetchConnection(FB_FRIENDS_URL, User.class);
-        log.info("Found " + myFriends.getData().size() + " facebook friends of accountId " + accountId);
+        log.info("Found " + myFriends.getData().size() + " facebook friends of id " + accountId);
         return myFriends.getData();
 
+    }
+
+    public static User getUserDetails(FacebookClient facebookClient) {
+        User user = facebookClient.fetchObject("me", User.class);
+        return user;
     }
 }

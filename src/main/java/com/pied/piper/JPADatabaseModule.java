@@ -27,6 +27,7 @@ public class JPADatabaseModule extends AbstractModule {
         properties.put("hibernate.connection.pool_size", "5");
         properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
         properties.put("hibernate.show_sql", "true");
+        properties.put("hibernate.format_sql", "true");
         properties.put("hibernate.connection.autocommit","false");
         properties.put("hibernate.connection.isolation","2");
         properties.put("hibernate.ejb.naming_strategy", "org.hibernate.cfg.ImprovedNamingStrategy");
