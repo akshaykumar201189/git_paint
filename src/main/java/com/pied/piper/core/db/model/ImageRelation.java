@@ -14,15 +14,11 @@ import javax.persistence.*;
  */
 @Data
 @Entity
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsonSnakeCase
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
-public class ImageRelation {
-    @Column(name = "id")
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+public class ImageRelation extends BaseEntity {
 
     @Column(name = "source_image")
     private Long sourceImage;

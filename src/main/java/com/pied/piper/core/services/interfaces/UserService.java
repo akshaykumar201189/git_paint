@@ -6,6 +6,7 @@ import com.pied.piper.core.dto.ImageMetaData;
 import com.pied.piper.core.dto.SearchUserRequestDto;
 import com.pied.piper.core.dto.UserDetails;
 import com.pied.piper.core.dto.user.SignInRequestDto;
+import com.pied.piper.core.dto.user.SignInResponseDto;
 import com.pied.piper.core.services.impl.UserServiceImpl;
 
 import java.util.List;
@@ -30,5 +31,5 @@ public interface UserService {
 
     List<List<ImageMetaData>> getFollowerImages(String userId);
 
-    void signInUser(SignInRequestDto signInRequestDto);
+    SignInResponseDto signInUser(SignInRequestDto signInRequestDto);
 }

@@ -16,15 +16,11 @@ import java.util.List;
  */
 @Data
 @Entity
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsonSnakeCase
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
-public class Image {
-    @Column(name = "image_id")
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long imageId;
+public class Image extends BaseEntity {
 
     @Column(name = "image", columnDefinition = "LONGTEXT")
     private String image;
@@ -38,12 +34,11 @@ public class Image {
     @Column(name = "account_id")
     private String accountId;
 
-    @Column(name = "version")
-    @Version
-    private Integer version;
-
     @Column(name = "num_of_likes")
     private Integer numOfLikes = 0;
+
+    @Column(name = "num_of_comments")
+    private Integer numOfComments = 0;
 
     @Column(name = "is_cloned")
     private Boolean isCloned = false;
@@ -55,13 +50,6 @@ public class Image {
     @Enumerated(EnumType.STRING)
     private EntityStatus entityStatus = EntityStatus.ACTIVE;
 
-    @OneToMany(mappedBy = "image", fetch = FetchType.LAZY)
-    private List<ImageLikes> likes = new ArrayList<>();
-
-    @OneToMany(mappedBy = "image", fetch = FetchType.LAZY)
-    private List<Comment> comments = new ArrayList<>();
-
     @Transient
     private ImageRelation imageRelation;
-
 }

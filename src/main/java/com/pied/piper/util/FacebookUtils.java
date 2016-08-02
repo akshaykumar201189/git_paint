@@ -2,6 +2,8 @@ package com.pied.piper.util;
 
 import com.restfb.Connection;
 import com.restfb.FacebookClient;
+import com.restfb.Parameter;
+import com.restfb.json.JsonObject;
 import com.restfb.types.User;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,5 +28,12 @@ public class FacebookUtils {
     public static User getUserDetails(FacebookClient facebookClient) {
         User user = facebookClient.fetchObject("me", User.class);
         return user;
+    }
+
+    public static String getFullProfileImageUrl(FacebookClient facebookClient) {
+        JsonObject jsonObject = facebookClient.fetchObject("me/picture", JsonObject.class, Parameter.with("type", "large"),Parameter.with("redirect","false"));
+        log.info("Output " + jsonObject);
+        JsonObject imageMap = (JsonObject) jsonObject.get("data");
+        return imageMap.getString("url");
     }
 }

@@ -1,13 +1,15 @@
 package com.pied.piper.core.db.model;
 
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.pied.piper.serialiser.ImageSerialiser;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.jackson.JsonSnakeCase;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -15,23 +17,16 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 @Entity
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsonSnakeCase
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 @Table(name = "image_likes" ,uniqueConstraints = { @UniqueConstraint( columnNames = { "account_id", "image_id" } ) })
-public class ImageLikes {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+public class ImageLikes extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_id")
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "image_id")
-    @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty("image_id")
-    @JsonSerialize(using = ImageSerialiser.class)
-    private Image image;
+    @NotNull
+    @Column(name = "image_id")
+    private Long imageId;
 
     @NotNull
     @Column(name = "account_id")

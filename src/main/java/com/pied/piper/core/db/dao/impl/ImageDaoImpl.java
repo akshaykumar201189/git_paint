@@ -32,7 +32,7 @@ public class ImageDaoImpl extends BaseDaoImpl<Image, Long> {
 
         Session session = (Session) getEntityManager().getDelegate();
         Criteria criteria = session.createCriteria(Image.class);
-        Criterion typeCriterion = Restrictions.eq("id", accountId);
+        Criterion typeCriterion = Restrictions.eq("accountId", accountId);
         criteria.add(typeCriterion);
 
         return criteria.list();
@@ -79,12 +79,12 @@ public class ImageDaoImpl extends BaseDaoImpl<Image, Long> {
         List<Image> images = new ArrayList<>();
         for (Object[] row : resultSet) {
             Image image = new Image();
-            image.setImageId((Long) row[0]);
+            image.setId((Long) row[0]);
             image.setAccountId((String) row[1]);
             image.setDescription((String) row[2]);
             image.setNumOfLikes((Integer) row[3]);
             image.setTitle((String) row[4]);
-            image.setVersion((Integer) row[5]);
+            image.setVersion((Long) row[5]);
             image.setIsCloned((Boolean) row[6]);
             images.add(image);
         }

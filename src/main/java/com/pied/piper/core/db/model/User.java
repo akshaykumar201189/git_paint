@@ -14,14 +14,10 @@ import java.util.List;
  */
 @Data
 @Entity
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @JsonSnakeCase
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
-public class User {
-    @Column(name = "user_id")
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long userId;
+public class User extends BaseEntity {
 
     @Column(name = "account_id", unique = true)
     private String accountId;
@@ -37,10 +33,6 @@ public class User {
 
     @Column(name = "full_profile_url")
     private String fullProfileUrl;
-
-    @Column(name = "version")
-    @Version
-    private Integer version;
 
     @OneToMany(mappedBy = "sourceUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UserRelations> followers = new ArrayList<>();

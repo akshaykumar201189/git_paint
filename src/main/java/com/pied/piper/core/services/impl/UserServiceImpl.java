@@ -3,19 +3,24 @@ package com.pied.piper.core.services.impl;
 import com.google.inject.Inject;
 import com.google.inject.persist.Transactional;
 import com.pied.piper.core.db.dao.impl.UserDaoImpl;
+import com.pied.piper.core.db.dao.impl.UserRelationsDaoImpl;
 import com.pied.piper.core.db.model.User;
 import com.pied.piper.core.db.model.UserRelations;
 import com.pied.piper.core.dto.ImageMetaData;
+import com.pied.piper.core.dto.ProfileDetails;
 import com.pied.piper.core.dto.SearchUserRequestDto;
 import com.pied.piper.core.dto.UserDetails;
 import com.pied.piper.core.dto.user.SignInRequestDto;
+import com.pied.piper.core.dto.user.SignInResponseDto;
 import com.pied.piper.core.services.interfaces.GalleriaService;
+import com.pied.piper.core.services.interfaces.SessionService;
 import com.pied.piper.core.services.interfaces.UserService;
 import com.pied.piper.exception.ResponseException;
 import com.pied.piper.util.FacebookUtils;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Version;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -26,15 +31,20 @@ import java.util.stream.Collectors;
 /**
  * Created by palash.v on 21/07/16.
  */
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserDaoImpl userDao;
     private final GalleriaService galleriaService;
+    private final SessionService sessionService;
+    private final UserRelationsDaoImpl userRelationsDao;
 
     @Inject
-    public UserServiceImpl(UserDaoImpl userDao, GalleriaService galleriaService) {
+    public UserServiceImpl(UserDaoImpl userDao, GalleriaService galleriaService, SessionService sessionService, UserRelationsDaoImpl userRelationsDao) {
         this.userDao = userDao;
         this.galleriaService = galleriaService;
+        this.sessionService = sessionService;
+        this.userRelationsDao = userRelationsDao;
     }
 
     @Override
@@ -105,8 +115,9 @@ public class UserServiceImpl implements UserService {
         if(follower!=null) {
             UserRelations userRelation = new UserRelations();
             userRelation.setSourceUser(user);
-            userRelation.setDestinationUserId(follower.getUserId());
+            userRelation.setDestinationUserId(follower.getId());
             user.getFollowers().add(userRelation);
+            userRelationsDao.save(userRelation);
         }
     }
 
@@ -125,7 +136,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public void signInUser(SignInRequestDto signInRequestDto) {
+    public SignInResponseDto signInUser(SignInRequestDto signInRequestDto) {
 
         // Search existing user
         SearchUserRequestDto searchUserRequestDto = new SearchUserRequestDto();
@@ -147,9 +158,10 @@ public class UserServiceImpl implements UserService {
 
         // Get Friends from facebook and follow them if not already followed
         List<com.restfb.types.User> friends = null;
+        FacebookClient client = null;
         try {
             String accessToken = signInRequestDto.getOAuthCredentials().getOAuthResponse().getAccessToken();
-            FacebookClient client = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
+            client = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
             friends = FacebookUtils.findFriends(client, user.getAccountId());
             com.restfb.types.User fbUser = FacebookUtils.getUserDetails(client);
             Validate.isTrue(fbUser.getId().equals(signInRequestDto.getUserDetails().getId()));
@@ -171,8 +183,25 @@ public class UserServiceImpl implements UserService {
 
         // TODO: Query Facebook and Store full profile image
         String fullProfileUrl = null;
-        // fullProfileUrl = FacebbokUtils.getFullProfileImageUrl(client);
+        fullProfileUrl = FacebookUtils.getFullProfileImageUrl(client);
         user.setFullProfileUrl(fullProfileUrl);
+
+        // Create a new Session for this user
+        String sessionId = sessionService.createSessionForAccount(user.getAccountId());
+        ProfileDetails profileDetails = null;
+
+        // Get Profile Details
+        try {
+            profileDetails = galleriaService.getProfileDetails(user.getAccountId(), user.getAccountId());
+        } catch (Exception e) {
+            log.error("Error in getting profile details of user " + user.getAccountId());
+        }
+
+        SignInResponseDto responseDto = new SignInResponseDto();
+        responseDto.setSessionId(sessionId);
+        responseDto.setProfileDetails(profileDetails);
+
+        return responseDto;
     }
 
 }

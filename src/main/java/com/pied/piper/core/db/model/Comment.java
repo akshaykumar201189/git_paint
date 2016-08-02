@@ -1,13 +1,13 @@
 package com.pied.piper.core.db.model;
 
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.pied.piper.serialiser.ImageSerialiser;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.jackson.JsonSnakeCase;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -15,22 +15,15 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 @Entity
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsonSnakeCase
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
-public class Comment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+public class Comment extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_id")
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "image_id")
-    @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty("image_id")
-    @JsonSerialize(using = ImageSerialiser.class)
-    private Image image;
+    @NotNull
+    @Column(name = "image_id")
+    private Long imageId;
 
     @NotNull
     @Column(name = "account_id")
@@ -42,8 +35,8 @@ public class Comment {
     @Override
     public String toString() {
         return "Comment{" +
-                "id=" + id +
-                ", image=" + image.getImageId() +
+                "id=" + getId() +
+                ", image=" + imageId +
                 ", id='" + accountId + '\'' +
                 ", comment='" + comment + '\'' +
                 '}';

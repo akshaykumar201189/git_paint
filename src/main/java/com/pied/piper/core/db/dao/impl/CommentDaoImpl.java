@@ -3,13 +3,11 @@ package com.pied.piper.core.db.dao.impl;
 import com.google.inject.Inject;
 import com.pied.piper.core.db.dao.api.BaseDao;
 import com.pied.piper.core.db.model.Comment;
-import com.pied.piper.core.db.model.ImageLikes;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 
 import javax.inject.Provider;
@@ -33,7 +31,7 @@ public class CommentDaoImpl extends BaseDaoImpl<Comment, Long> implements BaseDa
             return Collections.EMPTY_LIST;
         Session session = (Session) getEntityManager().getDelegate();
         Criteria criteria = session.createCriteria(Comment.class);
-        Criterion typeCriterion = Restrictions.eq("image.imageId", imageId);
+        Criterion typeCriterion = Restrictions.eq("imageId", imageId);
         criteria.add(typeCriterion);
         criteria.addOrder(Order.desc("id"));
         return criteria.list();
@@ -44,7 +42,7 @@ public class CommentDaoImpl extends BaseDaoImpl<Comment, Long> implements BaseDa
             return Collections.EMPTY_LIST;
         Session session = (Session) getEntityManager().getDelegate();
         Criteria criteria = session.createCriteria(Comment.class);
-        Criterion typeCriterion = Restrictions.eq("id", accountId);
+        Criterion typeCriterion = Restrictions.eq("accountId", accountId);
         criteria.add(typeCriterion);
         criteria.addOrder(Order.desc("id"));
         return criteria.list();

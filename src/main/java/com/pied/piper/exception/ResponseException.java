@@ -1,13 +1,15 @@
 package com.pied.piper.exception;
 
-import javax.ws.rs.core.Response;
-
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import javax.ws.rs.core.Response;
 
 /**
  * Created by ankit.c on 21/07/16.
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class ResponseException extends RuntimeException {
     final private static int serverError = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 

@@ -28,7 +28,7 @@ public class ImageMetaData {
     public ImageMetaData(){}
 
     public ImageMetaData(Image image){
-        this.imageId = image.getImageId();
+        this.imageId = image.getId();
         this.title = image.getTitle();
         this.description = image.getDescription();
         this.accountId = image.getAccountId();
@@ -38,7 +38,7 @@ public class ImageMetaData {
     }
 
     public ImageMetaData(Image image, User user){
-        this.imageId = image.getImageId();
+        this.imageId = image.getId();
         this.title = image.getTitle();
         this.description = image.getDescription();
         this.accountId = image.getAccountId();

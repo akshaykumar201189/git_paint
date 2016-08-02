@@ -160,6 +160,7 @@ public class ImageController {
      */
     @POST
     @Path("/{image_id}/like")
+    @ApiOperation(value = "Like Image")
     public Response imageLikedByUser(@PathParam("image_id") Long imageId,
                                      @HeaderParam("x-account-id") String accountId) {
         try {

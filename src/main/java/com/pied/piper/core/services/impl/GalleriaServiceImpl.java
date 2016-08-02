@@ -3,13 +3,11 @@ package com.pied.piper.core.services.impl;
 import com.google.inject.Inject;
 import com.google.inject.persist.Transactional;
 import com.pied.piper.core.db.dao.impl.ImageDaoImpl;
-import com.pied.piper.core.db.model.Image;
-import com.pied.piper.core.db.model.ImageRelation;
-import com.pied.piper.core.db.model.ImageTags;
-import com.pied.piper.core.db.model.User;
+import com.pied.piper.core.db.model.*;
 import com.pied.piper.core.db.model.enums.ApprovalStatusEnum;
 import com.pied.piper.core.dto.*;
 import com.pied.piper.core.services.interfaces.GalleriaService;
+import com.pied.piper.core.services.interfaces.ImageLikesService;
 import com.pied.piper.core.services.interfaces.ImageRelationService;
 import com.pied.piper.core.services.interfaces.UserService;
 import com.pied.piper.exception.ResponseException;
@@ -32,16 +30,18 @@ public class GalleriaServiceImpl implements GalleriaService {
     private final ImageTagServiceImpl imageTagService;
     private final UserService userService;
     private final ImageRelationService imageRelationService;
+    private final ImageLikesService imageLikesService;
     private final AWSUtils awsUtils;
     private final String IMAGE_PRE_APPEND_KEY = "img";
     private final String IMAGE_CLOUDFRONT_BASE_URL = "http://d1wbh4krdauia7.cloudfront.net/";
 
     @Inject
-    public GalleriaServiceImpl(ImageDaoImpl imageDao, ImageTagServiceImpl imageTagService, UserService userService, ImageRelationService imageRelationService, AWSUtils awsUtils) {
+    public GalleriaServiceImpl(ImageDaoImpl imageDao, ImageTagServiceImpl imageTagService, UserService userService, ImageRelationService imageRelationService, ImageLikesService imageLikesService, AWSUtils awsUtils) {
         this.imageDao = imageDao;
         this.imageTagService = imageTagService;
         this.userService = userService;
         this.imageRelationService = imageRelationService;
+        this.imageLikesService = imageLikesService;
         this.awsUtils = awsUtils;
     }
 
@@ -71,7 +71,7 @@ public class GalleriaServiceImpl implements GalleriaService {
             if (saveImageRequestDto.getImage() != null) {
                 String imageStr = saveImageRequestDto.getImage();
                 imageStr = imageStr.substring(imageStr.indexOf(",")+1);
-                String fileName = IMAGE_PRE_APPEND_KEY + "_" + image.getImageId() + "_" + System.currentTimeMillis() +".jpg";
+                String fileName = IMAGE_PRE_APPEND_KEY + "_" + image.getId() + "_" + System.currentTimeMillis() +".jpg";
                 awsUtils.uploadImageToS3(imageStr, fileName);
                 image.setImage(IMAGE_CLOUDFRONT_BASE_URL + fileName);
             }
@@ -91,7 +91,7 @@ public class GalleriaServiceImpl implements GalleriaService {
 
             imageDao.save(image);
 
-            return image.getImageId();
+            return image.getId();
         } catch (Exception e) {
             log.error("Error in saving Image ", e);
             throw e;
@@ -189,7 +189,6 @@ public class GalleriaServiceImpl implements GalleriaService {
         if(!accountId.equals(ownerAccountId)) {
             try {
                 List<User> followersOfOwner = userService.getFollowers(ownerAccountId);
-                //log.info("Followers " + followersOfOwner);
                 if(followersOfOwner!=null && followersOfOwner.size()>0) {
                     List<String> accountIdsOfFFollowers = followersOfOwner.stream().map(user -> user.getAccountId()).collect(Collectors.toList());
                     if (accountIdsOfFFollowers.contains(accountId))
@@ -209,42 +208,55 @@ public class GalleriaServiceImpl implements GalleriaService {
         searchUserRequestDto.setAccountId(accountId);
         List<User> users = userService.searchUser(searchUserRequestDto);
         if(users==null || users.size()==0)
-            throw new ResponseException("User not found",500);
+            throw new ResponseException("User not found", 500);
         List<User> followers = userService.getFollowers(users.get(0).getAccountId());
         UserResponseDto userResponseDto = new UserResponseDto(users.get(0), followers);
         profileDetails.setUser(userResponseDto);
 
         // get all images of user
         List<Image> images = getImagesForAccountId(accountId);
+        List<BasicImageDetails> basicImageDetailsList = new ArrayList<>();
+        for(Image image : images) {
+            List<ImageLikes> imageLikes = imageLikesService.findByImageId(image.getId());
+            List<User> likedUsers = new ArrayList<>();
+            for(ImageLikes imageLike : imageLikes) {
+                User likeUser = userService.findByAccountId(imageLike.getAccountId());
+                likedUsers.add(likeUser);
+            }
+            basicImageDetailsList.add(new BasicImageDetails(image, likedUsers));
+        }
 
         // get owned images
-        List<Image> ownedImages = images.stream().filter(image -> image.getIsCloned().equals(false)).collect(Collectors.toList());
+        List<BasicImageDetails> ownedImages = basicImageDetailsList.stream().filter(image -> image.getIsCloned().equals(false)).collect(Collectors.toList());
         profileDetails.setOwnedImages(ownedImages);
 
-        log.info("COming here before");
         // get cloned images
-        List<Image> clonedImages = images.stream().filter(image -> image.getIsCloned().equals(true)).collect(Collectors.toList());
+        List<BasicImageDetails> clonedImages = basicImageDetailsList.stream().filter(image -> image.getIsCloned().equals(true)).collect(Collectors.toList());
         if(clonedImages!=null && clonedImages.size() > 0) {
-            List<ImageRelation> imageRelationsData = imageRelationService.getImageRelationsForClonedImageIds(clonedImages.stream().map(imageMetaData -> imageMetaData.getImageId()).collect(Collectors.toList()));
+            List<ImageRelation> imageRelationsData = imageRelationService.getImageRelationsForClonedImageIds(clonedImages.stream().map(imageMetaData -> imageMetaData.getId()).collect(Collectors.toList()));
             Map<Long, ImageRelation> imageRelationMap = new HashMap<>();
             for (ImageRelation imageRelation : imageRelationsData) {
                 imageRelationMap.put(imageRelation.getClonedImage(), imageRelation);
             }
-            for (Image clonedImage : clonedImages) {
-                clonedImage.setImageRelation(imageRelationMap.get(clonedImage.getImageId()));
+            for (BasicImageDetails clonedImage : clonedImages) {
+                ImageRelation imageRelation = imageRelationMap.get(clonedImage.getId());
+                clonedImage.setSourceImageId(imageRelation.getSourceImage());
+                clonedImage.setApprovalStatus(imageRelation.getApprovalStatus());
             }
         }
         profileDetails.setClonedImages(clonedImages);
 
         // get Pull Request
         if(ownedImages!=null && ownedImages.size()>0) {
-            List<ImageRelation> imageRelations = imageRelationService.getImageRelationsForSourceImageIds(ownedImages.stream().map(image -> image.getImageId()).collect(Collectors.toList()));
+            log.info("Madar");
+            List<ImageRelation> imageRelations = imageRelationService.getImageRelationsForSourceImageIds(ownedImages.stream().map(image -> image.getId()).collect(Collectors.toList()));
+            log.info("Chod");
             imageRelations.removeIf(imageRelation -> !imageRelation.getApprovalStatus().equals(ApprovalStatusEnum.PENDING));
             List<PullRequest> pullRequests = new ArrayList<>();
-            log.info("COming here");
+
             if(imageRelations!=null && imageRelations.size()>0) {
                 List<Long> clonedImagesByOthersId = imageRelations.stream().map(imageRelation -> imageRelation.getClonedImage()).collect(Collectors.toList());
-                Criterion idCriterion = Restrictions.in("imageId", clonedImagesByOthersId);
+                Criterion idCriterion = Restrictions.in("id", clonedImagesByOthersId);
                 List<Image> clonedImagesByOthers = imageDao.findByCriteria(idCriterion);
                 List<String> accountIds = clonedImagesByOthers.stream().map(image -> image.getAccountId()).collect(Collectors.toList());
                 SearchUserRequestDto userRequestDto = new SearchUserRequestDto();
@@ -292,11 +304,11 @@ public class GalleriaServiceImpl implements GalleriaService {
 
             ImageRelation imageRelation = new ImageRelation();
             imageRelation.setApprovalStatus(ApprovalStatusEnum.NEW);
-            imageRelation.setClonedImage(clonedImage.getImageId());
+            imageRelation.setClonedImage(clonedImage.getId());
             imageRelation.setSourceImage(imageId);
 
             imageRelationService.saveImageRelation(imageRelation);
-            return clonedImage.getImageId();
+            return clonedImage.getId();
         } catch (Exception e) {
             log.error("Error in cloning " , e);
             throw new ResponseException("Error in cloning", 500);

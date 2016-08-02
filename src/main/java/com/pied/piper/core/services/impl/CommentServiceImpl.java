@@ -5,7 +5,6 @@ import com.google.inject.persist.Transactional;
 import com.pied.piper.core.db.dao.impl.CommentDaoImpl;
 import com.pied.piper.core.db.model.Comment;
 import com.pied.piper.core.db.model.Image;
-import com.pied.piper.core.db.model.ImageLikes;
 import com.pied.piper.core.db.model.User;
 import com.pied.piper.core.dto.CreateCommentDto;
 import com.pied.piper.core.services.interfaces.CommentService;
@@ -43,7 +42,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         Comment comment = new Comment();
-        comment.setImage(image);
+        comment.setImageId(image.getId());
         comment.setAccountId(user.getAccountId());
         comment.setComment(dto.getComment());
         commentDao.save(comment);

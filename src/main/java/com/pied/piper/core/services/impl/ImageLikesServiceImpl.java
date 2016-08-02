@@ -5,8 +5,6 @@ import com.google.inject.persist.Transactional;
 import com.pied.piper.core.db.dao.impl.ImageLikesDaoImpl;
 import com.pied.piper.core.db.model.Image;
 import com.pied.piper.core.db.model.ImageLikes;
-import com.pied.piper.core.db.model.User;
-import com.pied.piper.core.dto.CreateImageLikedDto;
 import com.pied.piper.core.services.interfaces.GalleriaService;
 import com.pied.piper.core.services.interfaces.ImageLikesService;
 import com.pied.piper.core.services.interfaces.UserService;
@@ -36,14 +34,9 @@ public class ImageLikesServiceImpl implements ImageLikesService {
             throw new ResponseException("image not found", Response.Status.NOT_FOUND);
         }
 
-        User user = userService.findByAccountId(accountId);
-        if(user == null) {
-            throw new ResponseException("invalid user id " + accountId, Response.Status.BAD_REQUEST);
-        }
-
         ImageLikes entity = new ImageLikes();
-        entity.setImage(image);
-        entity.setAccountId(user.getAccountId());
+        entity.setImageId(image.getId());
+        entity.setAccountId(accountId);
         likeDao.save(entity);
         image.setNumOfLikes(image.getNumOfLikes() + 1);
         return entity;

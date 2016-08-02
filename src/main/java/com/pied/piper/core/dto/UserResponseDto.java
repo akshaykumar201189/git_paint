@@ -24,11 +24,14 @@ public class UserResponseDto {
 
     private List<User> followers;
 
+    private String fullProfileUrl;
+
     public UserResponseDto(User user, List<User> followers) {
-        this.userId = user.getUserId();
+        this.userId = user.getId();
         this.accountId = user.getAccountId();
         this.name = user.getName();
         this.avatarUrl = user.getAvatarUrl();
         this.followers = followers;
+        this.fullProfileUrl = user.getFullProfileUrl();
     }
 }
