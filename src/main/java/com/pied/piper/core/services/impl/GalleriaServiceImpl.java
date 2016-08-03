@@ -12,6 +12,7 @@ import com.pied.piper.core.services.interfaces.ImageRelationService;
 import com.pied.piper.core.services.interfaces.UserService;
 import com.pied.piper.exception.ResponseException;
 import com.pied.piper.util.AWSUtils;
+import com.pied.piper.util.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
@@ -70,7 +71,8 @@ public class GalleriaServiceImpl implements GalleriaService {
 
             if (saveImageRequestDto.getImage() != null) {
                 String imageStr = saveImageRequestDto.getImage();
-                imageStr = imageStr.substring(imageStr.indexOf(",")+1);
+                imageStr = ImageUtils.decompressSignature(imageStr);
+                imageStr = imageStr.substring(imageStr.indexOf(",") + 1);
                 String fileName = IMAGE_PRE_APPEND_KEY + "_" + image.getId() + "_" + System.currentTimeMillis() +".jpg";
                 awsUtils.uploadImageToS3(imageStr, fileName);
                 image.setImage(IMAGE_CLOUDFRONT_BASE_URL + fileName);
@@ -248,9 +250,7 @@ public class GalleriaServiceImpl implements GalleriaService {
 
         // get Pull Request
         if(ownedImages!=null && ownedImages.size()>0) {
-            log.info("Madar");
             List<ImageRelation> imageRelations = imageRelationService.getImageRelationsForSourceImageIds(ownedImages.stream().map(image -> image.getId()).collect(Collectors.toList()));
-            log.info("Chod");
             imageRelations.removeIf(imageRelation -> !imageRelation.getApprovalStatus().equals(ApprovalStatusEnum.PENDING));
             List<PullRequest> pullRequests = new ArrayList<>();
 
