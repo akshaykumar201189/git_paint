@@ -35,6 +35,7 @@ public class BasicImageDetails {
     private List<String> tags = new ArrayList<>();
     private Boolean isCloned;
     private Long sourceImageId;
+    private String sourceImageUrl;
     private ApprovalStatusEnum approvalStatus;
     private List<User> topLikedUsers = new ArrayList<>();
     private Boolean isLikedbyMe;

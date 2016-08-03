@@ -244,11 +244,12 @@ public class GalleriaServiceImpl implements GalleriaService {
                 ImageRelation imageRelation = imageRelationMap.get(clonedImage.getId());
                 clonedImage.setSourceImageId(imageRelation.getSourceImage());
                 clonedImage.setApprovalStatus(imageRelation.getApprovalStatus());
+                clonedImage.setSourceImageUrl(imageDao.fetchById(imageRelation.getSourceImage()).getImage());
             }
         }
         profileDetails.setClonedImages(clonedImages);
 
-        // get Pull Request
+        // Get Pull Request
         if(ownedImages!=null && ownedImages.size()>0) {
             List<ImageRelation> imageRelations = imageRelationService.getImageRelationsForSourceImageIds(ownedImages.stream().map(image -> image.getId()).collect(Collectors.toList()));
             imageRelations.removeIf(imageRelation -> !imageRelation.getApprovalStatus().equals(ApprovalStatusEnum.PENDING));
@@ -266,9 +267,9 @@ public class GalleriaServiceImpl implements GalleriaService {
                 for(Image clonedImage : clonedImagesByOthers) {
                     PullRequest pullRequest = new PullRequest();
                     pullRequest.setPullRequestId(imageRelations.get(index).getId());
-                    pullRequest.setImage(clonedImage);
+                    pullRequest.setImage(new BasicImageDetails(clonedImage));
                     Long sourceImageId = imageRelations.get(index).getSourceImage();
-                    pullRequest.setOriginalImage(imageDao.fetchById(sourceImageId));
+                    pullRequest.setOriginalImage(new BasicImageDetails(imageDao.fetchById(sourceImageId)));
                     pullRequest.setSender(new UserResponseDto(usersList.get(index), null));
                     pullRequests.add(pullRequest);
                     index++;
@@ -363,8 +364,8 @@ public class GalleriaServiceImpl implements GalleriaService {
 
         PullRequest pullRequest = new PullRequest();
         pullRequest.setPullRequestId(imageRelation.getId());
-        pullRequest.setImage(clonedImage);
-        pullRequest.setOriginalImage(originalImage);
+        pullRequest.setImage(new BasicImageDetails(clonedImage));
+        pullRequest.setOriginalImage(new BasicImageDetails(originalImage));
 
         User user = userService.findByAccountId(clonedImage.getAccountId());
         pullRequest.setSender(new UserResponseDto(user, null));
