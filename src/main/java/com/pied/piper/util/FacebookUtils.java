@@ -31,7 +31,7 @@ public class FacebookUtils {
     }
 
     public static String getFullProfileImageUrl(FacebookClient facebookClient) {
-        JsonObject jsonObject = facebookClient.fetchObject("me/picture", JsonObject.class, Parameter.with("type", "large"),Parameter.with("redirect","false"));
+        JsonObject jsonObject = facebookClient.fetchObject("me/picture", JsonObject.class, Parameter.with("type", "large"),Parameter.with("redirect","false"),Parameter.with("width",1000));
         log.info("Output " + jsonObject);
         JsonObject imageMap = (JsonObject) jsonObject.get("data");
         return imageMap.getString("url");

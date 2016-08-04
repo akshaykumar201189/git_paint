@@ -7,6 +7,7 @@ import com.pied.piper.core.dto.ProfileDetails;
 import com.pied.piper.core.dto.user.SignInRequestDto;
 import com.pied.piper.core.dto.user.SignInResponseDto;
 import com.pied.piper.core.services.interfaces.GalleriaService;
+import com.pied.piper.core.services.interfaces.SessionService;
 import com.pied.piper.core.services.interfaces.UserService;
 import com.pied.piper.exception.ErrorResponse;
 import com.pied.piper.exception.ResponseException;
@@ -34,6 +35,8 @@ public class UserController {
     private UserService userService;
     @Inject
     private GalleriaService galleriaService;
+    @Inject
+    private SessionService sessionService;
 
     /**
      * Sign In API for user
@@ -59,14 +62,20 @@ public class UserController {
     /**
      * Get Profile Details for a User
      * @param accountId
-     * @param ownerAccountId
+     * @param sessionId
      * @return
      */
     @GET
     @Path("/profile/details/{account_id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get Profile Details", response = ProfileDetails.class)
-    public Response getProfileDetails(@PathParam("account_id") String accountId, @HeaderParam("x-account-id") String ownerAccountId) {
+    public Response getProfileDetails(@PathParam("account_id") String accountId, @HeaderParam("x-session-id") String sessionId) {
+        String ownerAccountId = null;
+        try {
+            ownerAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+        }
         try {
             ProfileDetails profileDetails = galleriaService.getProfileDetails(accountId, ownerAccountId);
             return Response.status(Response.Status.OK).entity(profileDetails).build();

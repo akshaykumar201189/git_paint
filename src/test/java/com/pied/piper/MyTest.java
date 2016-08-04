@@ -17,7 +17,7 @@ public class MyTest {
     public void test() {
         String accessToken = "EAAYx34WaRZBIBACQUJQ4C12oA9EgvkwCisLq4huqP2AGH4ELLhxGbzBFCrIZCf2cGKg5XzbwfPyaRnQuux8N38Dqp2GZAGUIoGVZAjjB38WyRuGN1RmxLH364sKMpbL1GkLwTSqzDH7I2ImKwKuyFhca42ZCYZAE8JRfaYoPdtFwZDZD";
         FacebookClient client = new DefaultFacebookClient(accessToken, Version.VERSION_2_0);
-        User user =client.fetchObject("me", User.class);
+        //User user =client.fetchObject("me", User.class);
         //String messageId = publishMessage(client);
         //System.out.println("Hello " + messageId);
         //fetchFriends(client);
@@ -31,7 +31,7 @@ public class MyTest {
         credentials.setAccessKey("AKIAJJD4VDIIEO2N4MOA");
         credentials.setSecretKey("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");
         AWSUtils awsUtils = new AWSUtils(credentials);
-        awsUtils.uploadImageToS3(imageData, fileName);
+        //awsUtils.uploadImageToS3(imageData, fileName);
     }
 
     String publishMessage(FacebookClient facebookClient) {

@@ -9,6 +9,7 @@ import com.pied.piper.core.dto.SaveImageRequestDto;
 import com.pied.piper.core.services.interfaces.CommentService;
 import com.pied.piper.core.services.interfaces.GalleriaService;
 import com.pied.piper.core.services.interfaces.ImageLikesService;
+import com.pied.piper.core.services.interfaces.SessionService;
 import com.pied.piper.exception.ErrorResponse;
 import com.pied.piper.exception.ResponseException;
 import com.wordnik.swagger.annotations.Api;
@@ -41,6 +42,9 @@ public class ImageController {
     @Inject
     private CommentService commentService;
 
+    @Inject
+    private SessionService sessionService;
+
     /**
      * Get the details of an Image
      * @param imageId
@@ -71,10 +75,16 @@ public class ImageController {
     @Path("/save")
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Save Image", response = HashMap.class)
-    public Response saveImage(@ApiParam("saveImageRequestDto") @Valid SaveImageRequestDto saveImageRequestDto) {
+    public Response saveImage(@HeaderParam("x-session-id") String sessionId, @ApiParam("saveImageRequestDto") @Valid SaveImageRequestDto saveImageRequestDto) {
+        String accountId = null;
+        try {
+            accountId = sessionService.validateAndGetAccountForSession(sessionId);
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
+        }
         HashMap response = new HashMap();
         try {
-            Long imageId = galleriaService.saveImage(saveImageRequestDto);
+            Long imageId = galleriaService.saveImage(saveImageRequestDto, accountId);
             response.put("image_id", imageId);
         } catch (Exception e) {
             String errorMsg = String.format("Error while saving image");

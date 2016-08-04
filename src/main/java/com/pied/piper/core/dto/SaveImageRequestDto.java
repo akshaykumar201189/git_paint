@@ -28,6 +28,4 @@ public class SaveImageRequestDto {
 
     private String title;
 
-    @NotNull
-    private String accountId;
 }

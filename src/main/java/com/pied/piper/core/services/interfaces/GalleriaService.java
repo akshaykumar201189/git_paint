@@ -9,7 +9,7 @@ import java.util.List;
  * Created by akshay.kesarwan on 21/05/16.
  */
 public interface GalleriaService {
-    Long saveImage(SaveImageRequestDto saveImageRequestDto) throws Exception;
+    Long saveImage(SaveImageRequestDto saveImageRequestDto, String accountId) throws Exception;
     String getImageData(Long imageId);
     ImageMetaData getImageMetaData(Long imageId);
     List<ImageMetaData> getImageMetaData(String accountId);

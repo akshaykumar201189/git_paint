@@ -48,7 +48,7 @@ public class GalleriaServiceImpl implements GalleriaService {
 
     @Override
     @Transactional
-    public Long saveImage(SaveImageRequestDto saveImageRequestDto) throws Exception {
+    public Long saveImage(SaveImageRequestDto saveImageRequestDto, String accountId) throws Exception {
         try {
             Image image = null;
             if(saveImageRequestDto.getImageId()!=null) {
@@ -64,8 +64,7 @@ public class GalleriaServiceImpl implements GalleriaService {
             if (saveImageRequestDto.getTitle() != null)
                 image.setTitle(saveImageRequestDto.getTitle());
 
-            if (saveImageRequestDto.getAccountId() != null)
-                image.setAccountId(saveImageRequestDto.getAccountId());
+            image.setAccountId(accountId);
 
             imageDao.save(image);
 

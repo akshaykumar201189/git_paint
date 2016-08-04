@@ -21,7 +21,7 @@ public class JPADatabaseModule extends AbstractModule {
         Properties properties = new Properties();
         properties.put("hibernate.hbm2ddl.auto", "update");
         properties.put("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-        properties.put("hibernate.connection.url","jdbc:mysql://localhost:3306/pied_piper?autoReconnect=true");
+        properties.put("hibernate.connection.url","jdbc:mysql://127.0.0.1:3306/pied_piper?autoReconnect=true");
         properties.put("hibernate.connection.username", "root");
         properties.put("hibernate.connection.password", "");
         properties.put("hibernate.connection.pool_size", "5");
