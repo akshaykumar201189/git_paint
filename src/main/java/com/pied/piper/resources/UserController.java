@@ -91,14 +91,20 @@ public class UserController {
 
     /**
      * Add Follower API
-     * @param userAccountId
+     * @param sessionId
      * @param followerAccountId
      * @return
      */
     @GET
     @Path("/addFollower")
     @ApiOperation("Add Follower")
-    public Response addFollower(@HeaderParam("x-account-id") String userAccountId, @QueryParam("follower_account_id") String followerAccountId) {
+    public Response addFollower(@HeaderParam("x-session-id") String sessionId, @QueryParam("follower_account_id") String followerAccountId) {
+        String userAccountId = null;
+        try {
+            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+        }
         try {
             userService.addFollower(userAccountId, followerAccountId);
             return Response.status(Response.Status.OK).build();
@@ -114,10 +120,16 @@ public class UserController {
 
     @GET
     @Path("/home")
-    public Response getImagesForFollower(@HeaderParam("x-account-id") String userId) {
+    public Response getImagesForFollower(@HeaderParam("x-session-id") String sessionId) {
+        String userAccountId = null;
         try {
-            List<User> followers = userService.getFollowers(userId);
-            List<List<ImageMetaData>> followerImages = userService.getFollowerImages(userId);
+            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+        }
+        try {
+            List<User> followers = userService.getFollowers(userAccountId);
+            List<List<ImageMetaData>> followerImages = userService.getFollowerImages(userAccountId);
             if (followerImages == null) {
                 ErrorResponse error = new ErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), "follower images not found");
                 return Response.status(Response.Status.NOT_FOUND).entity(error).build();
@@ -126,7 +138,7 @@ public class UserController {
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e){
-            String errorMsg = String.format("Error while getting follower images details for user id %d.", userId);
+            String errorMsg = String.format("Error while getting follower images details for user id %d.", userAccountId);
             log.error(errorMsg, e);
             ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();

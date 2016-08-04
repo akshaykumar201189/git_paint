@@ -5,6 +5,7 @@ import com.pied.piper.core.dto.PullRequest;
 import com.pied.piper.core.dto.SaveImageRequestDto;
 import com.pied.piper.core.dto.SearchResponseDto;
 import com.pied.piper.core.services.interfaces.GalleriaService;
+import com.pied.piper.core.services.interfaces.SessionService;
 import com.pied.piper.exception.ErrorResponse;
 import com.pied.piper.exception.ResponseException;
 import com.wordnik.swagger.annotations.Api;
@@ -26,11 +27,13 @@ import javax.ws.rs.core.Response;
 //TODO: Add session in header for security purposes
 public class GalleriaController {
 
-    private GalleriaService galleriaService;
+    private final GalleriaService galleriaService;
+    private final SessionService sessionService;
 
     @Inject
-    public GalleriaController(GalleriaService galleriaService) {
+    public GalleriaController(GalleriaService galleriaService, SessionService sessionService) {
         this.galleriaService = galleriaService;
+        this.sessionService = sessionService;
     }
 
     /**
@@ -42,7 +45,13 @@ public class GalleriaController {
     @Path("/search/any/{txt}")
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Search Tags and Users", response = SearchResponseDto.class)
-    public Response search(@PathParam("txt") String searchText) {
+    public Response search(@HeaderParam("x-session-id") String sessionId, @PathParam("txt") String searchText) {
+        String userAccountId = null;
+        try {
+            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+        }
         try {
             SearchResponseDto searchResponseDto = galleriaService.search(searchText);
             return Response.status(Response.Status.OK).entity(searchResponseDto).build();
@@ -56,16 +65,22 @@ public class GalleriaController {
 
     /**
      * Send a Pull Request
-     * @param accountId
+     * @param sessionId
      * @param clonedImageId
      * @return
      */
     @POST
     @Path("/pullrequest/send")
     @ApiOperation(value = "Send Pull Request")
-    public Response sendPullRequest(@HeaderParam("x-account-id") String accountId, @QueryParam("image_id") Long clonedImageId) {
+    public Response sendPullRequest(@HeaderParam("x-session-id") String sessionId, @QueryParam("image_id") Long clonedImageId) {
+        String userAccountId = null;
         try {
-            galleriaService.sendPullRequest(clonedImageId, accountId);
+            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+        }
+        try {
+            galleriaService.sendPullRequest(clonedImageId, userAccountId);
             return Response.status(Response.Status.OK).build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
@@ -87,7 +102,13 @@ public class GalleriaController {
     @Path("/pullrequest/approve/{pr_id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Approve Pull Request")
-    public Response approvePullRequest(@PathParam("pr_id") Long prId, @ApiParam("saveImageRequestDto") SaveImageRequestDto saveImageRequestDto) {
+    public Response approvePullRequest(@HeaderParam("x-session-id") String sessionId, @PathParam("pr_id") Long prId, @ApiParam("saveImageRequestDto") SaveImageRequestDto saveImageRequestDto) {
+        String userAccountId = null;
+        try {
+            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+        }
         try {
             galleriaService.approvePullRequest(prId, saveImageRequestDto);
             return Response.status(Response.Status.OK).build();
@@ -109,7 +130,13 @@ public class GalleriaController {
     @POST
     @Path("/pullrequest/reject/{pr_id}")
     @ApiOperation(value = "Reject Pull Request")
-    public Response rejectPullRequest(@PathParam("pr_id") Long prId) {
+    public Response rejectPullRequest(@HeaderParam("x-session-id") String sessionId, @PathParam("pr_id") Long prId) {
+        String userAccountId = null;
+        try {
+            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+        }
         try {
             galleriaService.rejectPullRequest(prId);
             return Response.status(Response.Status.OK).build();
@@ -131,7 +158,13 @@ public class GalleriaController {
     @GET
     @Path("/pullrequest/{pr_id}")
     @ApiOperation(value = "Approve Pull Request", response = PullRequest.class)
-    public Response getPullRequestDetails(@PathParam("pr_id") Long prId) {
+    public Response getPullRequestDetails(@HeaderParam("x-session-id") String sessionId, @PathParam("pr_id") Long prId) {
+        String userAccountId = null;
+        try {
+            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+        }
         try {
             return Response.status(Response.Status.OK).entity(galleriaService.getPullRequest(prId)).build();
         } catch (ResponseException e) {
