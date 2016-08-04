@@ -152,39 +152,40 @@ public class UserServiceImpl implements UserService {
             user.setName(userDetails.getName());
             user.setEmailId(userDetails.getEmail());
             userDao.save(user);
+
+            // Get Friends from facebook and follow them if not already followed
+            List<com.restfb.types.User> friends = null;
+            FacebookClient client = null;
+            try {
+                String accessToken = signInRequestDto.getOAuthCredentials().getOAuthResponse().getAccessToken();
+                client = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
+                friends = FacebookUtils.findFriends(client, user.getAccountId());
+                com.restfb.types.User fbUser = FacebookUtils.getUserDetails(client);
+                Validate.isTrue(fbUser.getId().equals(signInRequestDto.getUserDetails().getId()));
+            } catch (Exception e) {
+                throw new ResponseException("Authentication error while accessing facebook");
+            }
+
+            List<UserRelations> userRelationsList = user.getFollowers();
+            List<String> followersAccountIds = new ArrayList<>();
+            for(UserRelations userRelations : userRelationsList) {
+                followersAccountIds.add(userDao.fetchById(userRelations.getDestinationUserId()).getAccountId());
+            }
+
+            for(com.restfb.types.User friend : friends) {
+                if(!followersAccountIds.contains(friend.getId())) {
+                    addFollower(user.getAccountId(),friend.getId());
+                }
+            }
+
+            // TODO: Query Facebook and Store full profile image
+            String fullProfileUrl = null;
+            fullProfileUrl = FacebookUtils.getFullProfileImageUrl(client);
+            user.setFullProfileUrl(fullProfileUrl);
+
         } else {
             user = users.get(0);
         }
-
-        // Get Friends from facebook and follow them if not already followed
-        List<com.restfb.types.User> friends = null;
-        FacebookClient client = null;
-        try {
-            String accessToken = signInRequestDto.getOAuthCredentials().getOAuthResponse().getAccessToken();
-            client = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
-            friends = FacebookUtils.findFriends(client, user.getAccountId());
-            com.restfb.types.User fbUser = FacebookUtils.getUserDetails(client);
-            Validate.isTrue(fbUser.getId().equals(signInRequestDto.getUserDetails().getId()));
-        } catch (Exception e) {
-            throw new ResponseException("Authentication error while accessing facebook");
-        }
-
-        List<UserRelations> userRelationsList = user.getFollowers();
-        List<String> followersAccountIds = new ArrayList<>();
-        for(UserRelations userRelations : userRelationsList) {
-            followersAccountIds.add(userDao.fetchById(userRelations.getDestinationUserId()).getAccountId());
-        }
-
-        for(com.restfb.types.User friend : friends) {
-            if(!followersAccountIds.contains(friend.getId())) {
-                addFollower(user.getAccountId(),friend.getId());
-            }
-        }
-
-        // TODO: Query Facebook and Store full profile image
-        String fullProfileUrl = null;
-        fullProfileUrl = FacebookUtils.getFullProfileImageUrl(client);
-        user.setFullProfileUrl(fullProfileUrl);
 
         // Create a new Session for this user
         String sessionId = sessionService.createSessionForAccount(user.getAccountId());
