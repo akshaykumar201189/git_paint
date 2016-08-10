@@ -95,7 +95,7 @@ public class UserController {
      * @param followerAccountId
      * @return
      */
-    @GET
+    @POST
     @Path("/addFollower")
     @ApiOperation("Add Follower")
     public Response addFollower(@HeaderParam("x-session-id") String sessionId, @QueryParam("follower_account_id") String followerAccountId) {

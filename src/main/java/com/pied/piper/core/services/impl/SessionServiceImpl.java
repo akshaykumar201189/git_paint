@@ -14,8 +14,8 @@ import java.util.UUID;
 // TODO : Add Redis/DB based session implementation here rather than local hashmap
 public class SessionServiceImpl implements SessionService {
 
-    private Map<String, String > accountToSessionMap = new HashMap<>();
-    private Map<String, String > sessionToAccountMap = new HashMap<>();
+    private static Map<String, String > accountToSessionMap = new HashMap<>();
+    private static Map<String, String > sessionToAccountMap = new HashMap<>();
 
     @Inject
     public SessionServiceImpl() {
