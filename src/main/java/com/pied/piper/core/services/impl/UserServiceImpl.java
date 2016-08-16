@@ -155,16 +155,8 @@ public class UserServiceImpl implements UserService {
 
             // Get Friends from facebook and follow them if not already followed
             List<com.restfb.types.User> friends = null;
-            FacebookClient client = null;
-            try {
-                String accessToken = signInRequestDto.getOAuthCredentials().getOAuthResponse().getAccessToken();
-                client = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
-                friends = FacebookUtils.findFriends(client, user.getAccountId());
-                com.restfb.types.User fbUser = FacebookUtils.getUserDetails(client);
-                Validate.isTrue(fbUser.getId().equals(signInRequestDto.getUserDetails().getId()));
-            } catch (Exception e) {
-                throw new ResponseException("Authentication error while accessing facebook");
-            }
+            FacebookClient client = validateUser(signInRequestDto, user);
+            friends = FacebookUtils.findFriends(client, user.getAccountId());
 
             List<UserRelations> userRelationsList = user.getFollowers();
             List<String> followersAccountIds = new ArrayList<>();
@@ -185,6 +177,7 @@ public class UserServiceImpl implements UserService {
 
         } else {
             user = users.get(0);
+            validateUser(signInRequestDto, user);
         }
 
         // Create a new Session for this user
@@ -203,6 +196,20 @@ public class UserServiceImpl implements UserService {
         responseDto.setProfileDetails(profileDetails);
 
         return responseDto;
+    }
+
+    private FacebookClient validateUser(SignInRequestDto signInRequestDto, User user) {
+        FacebookClient client = null;
+        try {
+            String accessToken = signInRequestDto.getOAuthCredentials().getOAuthResponse().getAccessToken();
+            client = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
+            com.restfb.types.User fbUser = FacebookUtils.getUserDetails(client);
+            log.info("fb user id is " + fbUser.getId());
+            Validate.isTrue(fbUser.getId().equals(signInRequestDto.getUserDetails().getId()));
+        } catch (Exception e) {
+            throw new ResponseException("Authentication error while accessing facebook");
+        }
+        return client;
     }
 
 }

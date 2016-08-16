@@ -14,6 +14,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -45,13 +46,14 @@ public class GalleriaController {
     @Path("/search/any/{txt}")
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Search Tags and Users", response = SearchResponseDto.class)
-    public Response search(@HeaderParam("x-session-id") String sessionId, @PathParam("txt") String searchText) {
-        String userAccountId = null;
+    public Response search(@CookieParam("sid") Cookie session, @PathParam("txt") String searchText) {
+        String accountId = null;
         try {
-            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
             SearchResponseDto searchResponseDto = galleriaService.search(searchText);
             return Response.status(Response.Status.OK).entity(searchResponseDto).build();
@@ -72,15 +74,16 @@ public class GalleriaController {
     @POST
     @Path("/pullrequest/send")
     @ApiOperation(value = "Send Pull Request")
-    public Response sendPullRequest(@HeaderParam("x-session-id") String sessionId, @QueryParam("image_id") Long clonedImageId) {
-        String userAccountId = null;
+    public Response sendPullRequest(@CookieParam("sid") Cookie session, @QueryParam("image_id") Long clonedImageId) {
+        String accountId = null;
         try {
-            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
-            galleriaService.sendPullRequest(clonedImageId, userAccountId);
+            galleriaService.sendPullRequest(clonedImageId, accountId);
             return Response.status(Response.Status.OK).build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
@@ -102,13 +105,14 @@ public class GalleriaController {
     @Path("/pullrequest/approve/{pr_id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Approve Pull Request")
-    public Response approvePullRequest(@HeaderParam("x-session-id") String sessionId, @PathParam("pr_id") Long prId, @ApiParam("saveImageRequestDto") SaveImageRequestDto saveImageRequestDto) {
-        String userAccountId = null;
+    public Response approvePullRequest(@CookieParam("sid") Cookie session, @PathParam("pr_id") Long prId, @ApiParam("saveImageRequestDto") SaveImageRequestDto saveImageRequestDto) {
+        String accountId = null;
         try {
-            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
             galleriaService.approvePullRequest(prId, saveImageRequestDto);
             return Response.status(Response.Status.OK).build();
@@ -130,13 +134,14 @@ public class GalleriaController {
     @POST
     @Path("/pullrequest/reject/{pr_id}")
     @ApiOperation(value = "Reject Pull Request")
-    public Response rejectPullRequest(@HeaderParam("x-session-id") String sessionId, @PathParam("pr_id") Long prId) {
-        String userAccountId = null;
+    public Response rejectPullRequest(@CookieParam("sid") Cookie session, @PathParam("pr_id") Long prId) {
+        String accountId = null;
         try {
-            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
             galleriaService.rejectPullRequest(prId);
             return Response.status(Response.Status.OK).build();
@@ -158,13 +163,14 @@ public class GalleriaController {
     @GET
     @Path("/pullrequest/{pr_id}")
     @ApiOperation(value = "Approve Pull Request", response = PullRequest.class)
-    public Response getPullRequestDetails(@HeaderParam("x-session-id") String sessionId, @PathParam("pr_id") Long prId) {
-        String userAccountId = null;
+    public Response getPullRequestDetails(@CookieParam("sid") Cookie session, @PathParam("pr_id") Long prId) {
+        String accountId = null;
         try {
-            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
             return Response.status(Response.Status.OK).entity(galleriaService.getPullRequest(prId)).build();
         } catch (ResponseException e) {

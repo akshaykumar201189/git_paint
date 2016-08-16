@@ -9,5 +9,6 @@
         <class>com.pied.piper.core.db.model.ImageTags</class>
         <class>com.pied.piper.core.db.model.ImageLikes</class>
         <class>com.pied.piper.core.db.model.Comment</class>
+        <class>com.pied.piper.core.db.model.Session</class>
     </persistence-unit>
 </persistence>

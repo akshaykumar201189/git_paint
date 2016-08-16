@@ -36,7 +36,7 @@ dependencies {
     compile 'com.googlecode.genericdao:dao-hibernate:1.2.0'
     compile 'com.google.inject.extensions:guice-multibindings:' + guiceVersion,
             'com.google.inject.extensions:guice-persist:' + guiceVersion
-    compile 'mysql:mysql-connector-java:5.1.28'
+    compile 'mysql:mysql-connector-java:5.1.37'
     // https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.8.3'
     compile 'org.hibernate:hibernate-search-orm:5.0.0.Final'

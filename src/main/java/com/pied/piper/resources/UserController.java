@@ -18,7 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -50,7 +52,8 @@ public class UserController {
     public Response signInUser(@ApiParam("signInRequestDto") @Valid SignInRequestDto signInRequestDto) {
         try {
             SignInResponseDto responseDto = userService.signInUser(signInRequestDto);
-            return Response.status(Response.Status.OK).entity(responseDto).build();
+            NewCookie sessionCookie = new NewCookie("sid",responseDto.getSessionId());
+            return Response.status(Response.Status.OK).entity(responseDto).cookie(sessionCookie).build();
         } catch (Exception e) {
             String errorMsg = String.format("Error while signing for ", signInRequestDto.getUserDetails().getId());
             log.error(errorMsg, e);
@@ -61,28 +64,28 @@ public class UserController {
 
     /**
      * Get Profile Details for a User
-     * @param accountId
-     * @param sessionId
+     * @param destinationAccountId
      * @return
      */
     @GET
     @Path("/profile/details/{account_id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get Profile Details", response = ProfileDetails.class)
-    public Response getProfileDetails(@PathParam("account_id") String accountId, @HeaderParam("x-session-id") String sessionId) {
-        String ownerAccountId = null;
+    public Response getProfileDetails(@PathParam("account_id") String destinationAccountId, @CookieParam("sid") Cookie session) {
+        String accountId = null;
         try {
-            ownerAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
-            ProfileDetails profileDetails = galleriaService.getProfileDetails(accountId, ownerAccountId);
+            ProfileDetails profileDetails = galleriaService.getProfileDetails(destinationAccountId, accountId);
             return Response.status(Response.Status.OK).entity(profileDetails).build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e) {
-            String errorMsg = String.format("Error while getting profile details for account id %d.", accountId);
+            String errorMsg = String.format("Error while getting profile details for account id %d.", destinationAccountId);
             log.error(errorMsg, e);
             ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
@@ -91,27 +94,27 @@ public class UserController {
 
     /**
      * Add Follower API
-     * @param sessionId
      * @param followerAccountId
      * @return
      */
     @POST
     @Path("/addFollower")
     @ApiOperation("Add Follower")
-    public Response addFollower(@HeaderParam("x-session-id") String sessionId, @QueryParam("follower_account_id") String followerAccountId) {
-        String userAccountId = null;
+    public Response addFollower(@CookieParam("sid") Cookie session, @QueryParam("follower_account_id") String followerAccountId) {
+        String accountId = null;
         try {
-            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
-            userService.addFollower(userAccountId, followerAccountId);
+            userService.addFollower(accountId, followerAccountId);
             return Response.status(Response.Status.OK).build();
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e){
-            String errorMsg = String.format("Error while creating followers details for account id %d.", userAccountId);
+            String errorMsg = String.format("Error while creating followers details for account id %d.", accountId);
             log.error(errorMsg, e);
             ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
@@ -120,16 +123,17 @@ public class UserController {
 
     @GET
     @Path("/home")
-    public Response getImagesForFollower(@HeaderParam("x-session-id") String sessionId) {
-        String userAccountId = null;
+    public Response getImagesForFollower(@CookieParam("sid") Cookie session) {
+        String accountId = null;
         try {
-            userAccountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
-            List<User> followers = userService.getFollowers(userAccountId);
-            List<List<ImageMetaData>> followerImages = userService.getFollowerImages(userAccountId);
+            List<User> followers = userService.getFollowers(accountId);
+            List<List<ImageMetaData>> followerImages = userService.getFollowerImages(accountId);
             if (followerImages == null) {
                 ErrorResponse error = new ErrorResponse(Response.Status.NOT_FOUND.getStatusCode(), "follower images not found");
                 return Response.status(Response.Status.NOT_FOUND).entity(error).build();
@@ -138,7 +142,7 @@ public class UserController {
         } catch (ResponseException e) {
             return Response.status(e.getErrorResponse().getErrorCode()).entity(e.getErrorResponse()).build();
         } catch (Exception e){
-            String errorMsg = String.format("Error while getting follower images details for user id %d.", userAccountId);
+            String errorMsg = String.format("Error while getting follower images details for user id %d.", accountId);
             log.error(errorMsg, e);
             ErrorResponse errorResponse = new ErrorResponse(errorMsg + " " + e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();

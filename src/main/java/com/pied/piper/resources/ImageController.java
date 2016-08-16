@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
@@ -53,7 +54,14 @@ public class ImageController {
     @GET
     @Path("/details/{image_id}")
     @ApiOperation(value = "Get Image Details", response = Image.class)
-    public Response getImageDetails(@HeaderParam("x-session-id") String sessionId, @PathParam("image_id") Long imageId) {
+    public Response getImageDetails(@CookieParam("sid") Cookie session, @PathParam("image_id") Long imageId) {
+        String accountId = null;
+        try {
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
+        }
+        log.info("Account Id is " + accountId);
         try {
             Image image = galleriaService.getImage(imageId);
             if (image == null) {
@@ -75,13 +83,14 @@ public class ImageController {
     @Path("/save")
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Save Image", response = HashMap.class)
-    public Response saveImage(@HeaderParam("x-session-id") String sessionId, @ApiParam("saveImageRequestDto") @Valid SaveImageRequestDto saveImageRequestDto) {
+    public Response saveImage(@CookieParam("sid") Cookie session, @ApiParam("saveImageRequestDto") @Valid SaveImageRequestDto saveImageRequestDto) {
         String accountId = null;
         try {
-            accountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         HashMap response = new HashMap();
         try {
             Long imageId = galleriaService.saveImage(saveImageRequestDto, accountId);
@@ -97,20 +106,20 @@ public class ImageController {
 
     /**
      * Clone an existing image
-     * @param sessionId
      * @param imageId
      * @return
      */
     @POST
     @Path("/clone")
     @ApiOperation(value = "Clone Image", response = HashMap.class)
-    public Response cloneImage(@HeaderParam("x-session-id") String sessionId, @QueryParam("image_id") Long imageId) {
+    public Response cloneImage(@CookieParam("sid") Cookie session, @QueryParam("image_id") Long imageId) {
         String accountId = null;
         try {
-            accountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         HashMap response = new HashMap();
         try {
             Long clonedImageId = galleriaService.cloneImage(imageId, accountId);
@@ -133,7 +142,14 @@ public class ImageController {
      */
     @GET
     @Path("/{image_id}/like")
-    public Response getImageLikes(@HeaderParam("x-session-id") String sessionId, @PathParam("image_id") Long imageId) {
+    public Response getImageLikes(@CookieParam("sid") Cookie session, @PathParam("image_id") Long imageId) {
+        String accountId = null;
+        try {
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
+        } catch (ResponseException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
+        }
+        log.info("Account Id is " + accountId);
         try {
             List<ImageLikes> likes = imageLikesService.findByImageId(imageId);
             return Response.status(Response.Status.OK).entity(likes).build();
@@ -154,13 +170,14 @@ public class ImageController {
      */
     @GET
     @Path("/{image_id}/comment")
-    public Response getImageComments(@HeaderParam("x-session-id") String sessionId, @PathParam("image_id") Long imageId) {
+    public Response getImageComments(@CookieParam("sid") Cookie session, @PathParam("image_id") Long imageId) {
         String accountId = null;
         try {
-            accountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
             List<Comment> comments = commentService.findByImageId(imageId);
             return Response.status(Response.Status.OK).entity(comments).build();
@@ -177,19 +194,19 @@ public class ImageController {
     /**
      * Like an Image
      * @param imageId
-     * @param sessionId
      * @return
      */
     @POST
     @Path("/{image_id}/like")
     @ApiOperation(value = "Like Image")
-    public Response imageLikedByUser(@HeaderParam("x-session-id") String sessionId, @PathParam("image_id") Long imageId) {
+    public Response imageLikedByUser(@CookieParam("sid") Cookie session, @PathParam("image_id") Long imageId) {
         String accountId = null;
         try {
-            accountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
             imageLikesService.save(imageId, accountId);
             return Response.status(Response.Status.CREATED).build();
@@ -206,21 +223,21 @@ public class ImageController {
     /**
      * Comment an Image
      * @param imageId
-     * @param sessionId
      * @param dto
      * @return
      */
     @POST
     @Path("/{image_id}/comment")
     public Response saveComment(@PathParam("image_id") Long imageId,
-                                @HeaderParam("x-session-id") String sessionId,
+                                @CookieParam("sid") Cookie session,
                                 @ApiParam("dto") @Valid CreateCommentDto dto) {
         String accountId = null;
         try {
-            accountId = sessionService.validateAndGetAccountForSession(sessionId);
+            accountId = sessionService.validateAndGetAccountForSession(session.getValue());
         } catch (ResponseException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getErrorResponse()).build();
         }
+        log.info("Account Id is " + accountId);
         try {
             dto.setAccountId(accountId);
             commentService.save(imageId, dto);

@@ -1,11 +1,15 @@
 package com.pied.piper.core.services.impl;
 
 import com.google.inject.Inject;
+import com.pied.piper.core.db.dao.impl.SessionDaoImpl;
+import com.pied.piper.core.db.model.Session;
 import com.pied.piper.core.services.interfaces.SessionService;
 import com.pied.piper.exception.ResponseException;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Restrictions;
+import org.joda.time.DateTime;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -14,26 +18,34 @@ import java.util.UUID;
 // TODO : Add Redis/DB based session implementation here rather than local hashmap
 public class SessionServiceImpl implements SessionService {
 
-    private static Map<String, String > accountToSessionMap = new HashMap<>();
-    private static Map<String, String > sessionToAccountMap = new HashMap<>();
+    private final SessionDaoImpl sessionDao;
 
     @Inject
-    public SessionServiceImpl() {
-
+    public SessionServiceImpl(SessionDaoImpl sessionDao) {
+        this.sessionDao = sessionDao;
     }
 
     @Override
     public String createSessionForAccount(String accountId) throws ResponseException {
         String sessionId = UUID.randomUUID().toString();
-        accountToSessionMap.put(accountId, sessionId);
-        sessionToAccountMap.put(sessionId, accountId);
+        Session session = new Session();
+        session.setAccountId(accountId);
+        session.setSessionId(sessionId);
+        session.setExpirationTime(DateTime.now().plusMonths(6));
+        sessionDao.save(session);
         return sessionId;
     }
 
     @Override
     public String validateAndGetAccountForSession(String sessionId) throws ResponseException {
-        if(!sessionToAccountMap.containsKey(sessionId))
-            throw new ResponseException("Session Id not found");
-        return sessionToAccountMap.get(sessionId);
+        Criterion criterion = Restrictions.eq("sessionId", sessionId);
+        List<Session> sessions = sessionDao.findByCriteria(criterion);
+        if(sessions!=null && sessions.size()>0) {
+            for(Session session : sessions) {
+                if(session.getExpirationTime().isAfterNow())
+                    return session.getAccountId();
+            }
+        }
+        throw new ResponseException("Session Id not found");
     }
 }
