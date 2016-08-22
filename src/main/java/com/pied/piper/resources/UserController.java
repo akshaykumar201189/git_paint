@@ -52,7 +52,7 @@ public class UserController {
     public Response signInUser(@ApiParam("signInRequestDto") @Valid SignInRequestDto signInRequestDto) {
         try {
             SignInResponseDto responseDto = userService.signInUser(signInRequestDto);
-            NewCookie sessionCookie = new NewCookie("sid",responseDto.getSessionId());
+            NewCookie sessionCookie = new NewCookie("sid", responseDto.getSessionId(), "/", null, null, -1, false);
             return Response.status(Response.Status.OK).entity(responseDto).cookie(sessionCookie).build();
         } catch (Exception e) {
             String errorMsg = String.format("Error while signing for ", signInRequestDto.getUserDetails().getId());
